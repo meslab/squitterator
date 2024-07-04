@@ -31,6 +31,17 @@ pub(super) fn print_planes(
                         -(((p.category.0 << 1) | p.category.1) as i32)
                     });
                 }
+                'd' => {
+                    planes_vector.sort_by_cached_key(|&(_, p)| {
+                        p.distance_from_observer.unwrap_or(0.0) as i32
+                    });
+                }
+                'D' => {
+                    planes_vector.sort_by_cached_key(|&(_, p)| {
+                        p.distance_from_observer.unwrap_or(0.0) as i32
+                    });
+                    planes_vector.reverse();
+                }
                 'N' => {
                     planes_vector.sort_by_cached_key(|&(_, p)| p.lat as i32);
                 }
