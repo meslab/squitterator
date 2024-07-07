@@ -6,7 +6,23 @@ pub(super) fn print_header(
     extra: bool,
     header: bool,
 ) {
-    let headers_1 = [
+    let (header_line, separator_line) = get_header(weather, angles, speed, altitude, extra);
+
+    if header {
+        print!("{}{}", header_line, separator_line);
+    } else {
+        print!("{}", separator_line);
+    }
+}
+
+fn get_header(
+    weather: bool,
+    angles: bool,
+    speed: bool,
+    altitude: bool,
+    extra: bool,
+) -> (String, String) {
+    let mut headers = vec![
         ("ICAO", 6),
         ("RG", 2),
         ("SQWK", 4),
@@ -16,135 +32,219 @@ pub(super) fn print_header(
         ("LONGITUDE", 11),
         ("DIST", 5),
         ("ALT B", 5),
-    ];
-    let headers_2 = [("VRATE", 5), ("TRK", 3), ("HDG", 3), ("GSP", 3)];
-
-    let headers_speed = [("TAS", 3), ("IAS", 3), ("MACH", 4)];
-    let headers_angles = [("RLL", 3), ("TAR", 3)];
-    let headers_altitude = [("ALT G", 5), ("ALT S", 5), ("BARO", 4)];
-    let headers_weather = [
-        ("TEMP", 5),
-        ("WND", 3),
-        ("WDR", 3),
-        ("HUM", 3),
-        ("PRES", 4),
-        ("TB", 2),
+        ("VRATE", 5),
+        ("TRK", 3),
+        ("HDG", 3),
+        ("GSP", 3),
     ];
 
-    let extra_headers = [
-        ("VX", 2),
-        ("DF", 2),
-        ("TC", 2),
-        ("V", 1),
-        ("S", 1),
-        ("PTH", 3),
-    ];
+    if altitude {
+        headers.extend([("ALT G", 5), ("ALT S", 5), ("BARO", 4)]);
+    }
+    if speed {
+        headers.extend([("TAS", 3), ("IAS", 3), ("MACH", 4)]);
+    }
+    if angles {
+        headers.extend([("RLL", 3), ("TAR", 3)]);
+    }
+    if weather {
+        headers.extend([
+            ("TEMP", 5),
+            ("WND", 3),
+            ("WDR", 3),
+            ("HUM", 3),
+            ("PRES", 4),
+            ("TB", 2),
+        ]);
+    }
+    if extra {
+        headers.extend([
+            ("VX", 2),
+            ("DF", 2),
+            ("TC", 2),
+            ("V", 1),
+            ("S", 1),
+            ("PTH", 3),
+        ]);
+    }
 
-    let header_line: String = headers_1
-        .iter()
-        .map(|&(header, width)| format!("{:>width$} ", header, width = width))
-        .chain(if altitude {
-            headers_altitude
-                .iter()
-                .map(|&(header, width)| format!("{:>width$} ", header, width = width))
-                .collect()
-        } else {
-            Vec::new()
-        })
-        .chain(
-            headers_2
-                .iter()
-                .map(|&(header, width)| format!("{:>width$} ", header, width = width)),
+    let (header_line, separator_line) = headers.iter().fold(
+        (String::new(), String::new()),
+        |(mut header_line, mut separator_line), &(header, width)| {
+            use std::fmt::Write;
+            write!(&mut header_line, "{:>width$} ", header, width = width).unwrap();
+            write!(&mut separator_line, "{:-<width$} ", "", width = width).unwrap();
+            (header_line, separator_line)
+        },
+    );
+
+    let header_line = header_line + "LC\n";
+    let separator_line = separator_line + "--\n";
+
+    (header_line, separator_line)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_base() {
+        let (weather, angles, speed, altitude, extra) = (false, false, false, false, false);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP LC\n"
         )
-        .chain(if speed {
-            headers_speed
-                .iter()
-                .map(|&(header, width)| format!("{:>width$} ", header, width = width))
-                .collect()
-        } else {
-            Vec::new()
-        })
-        .chain(if angles {
-            headers_angles
-                .iter()
-                .map(|&(header, width)| format!("{:>width$} ", header, width = width))
-                .collect()
-        } else {
-            Vec::new()
-        })
-        .chain(if weather {
-            headers_weather
-                .iter()
-                .map(|&(header, width)| format!("{:>width$} ", header, width = width))
-                .collect()
-        } else {
-            Vec::new()
-        })
-        .chain(if extra {
-            extra_headers
-                .iter()
-                .map(|&(header, width)| format!("{:>width$} ", header, width = width))
-                .collect()
-        } else {
-            Vec::new()
-        })
-        .collect::<String>()
-        + "LC\n";
+    }
 
-    let separator_line: String = headers_1
-        .iter()
-        .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
-        .chain(if altitude {
-            headers_altitude
-                .iter()
-                .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
-                .collect()
-        } else {
-            Vec::new()
-        })
-        .chain(
-            headers_2
-                .iter()
-                .map(|&(_, width)| format!("{:-<width$} ", "", width = width)),
+    #[test]
+    fn test_weather_0() {
+        let (weather, angles, speed, altitude, extra) = (true, false, false, false, false);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP  TEMP WND WDR HUM PRES TB LC\n"
         )
-        .chain(if speed {
-            headers_speed
-                .iter()
-                .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
-                .collect()
-        } else {
-            Vec::new()
-        })
-        .chain(if angles {
-            headers_angles
-                .iter()
-                .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
-                .collect()
-        } else {
-            Vec::new()
-        })
-        .chain(if weather {
-            headers_weather
-                .iter()
-                .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
-                .collect()
-        } else {
-            Vec::new()
-        })
-        .chain(if extra {
-            extra_headers
-                .iter()
-                .map(|&(_, width)| format!("{:-<width$} ", "", width = width))
-                .collect()
-        } else {
-            Vec::new()
-        })
-        .collect::<String>()
-        + "--\n";
+    }
 
-    if header {
-        print!("{}{}", header_line, separator_line);
-    } else {
-        print!("{}", separator_line);
+    #[test]
+    fn test_weather_1() {
+        let (weather, angles, speed, altitude, extra) = (true, true, false, false, false);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP RLL TAR  TEMP WND WDR HUM PRES TB LC\n"
+        )
+    }
+
+    #[test]
+    fn test_weather_2() {
+        let (weather, angles, speed, altitude, extra) = (true, true, true, false, false);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB LC\n"
+        )
+    }
+
+    #[test]
+    fn test_weather_3() {
+        let (weather, angles, speed, altitude, extra) = (true, true, true, true, false);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB LC\n"
+        )
+    }
+
+    #[test]
+    fn test_weather_4() {
+        let (weather, angles, speed, altitude, extra) = (true, true, true, true, true);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB VX DF TC V S PTH LC\n"
+        )
+    }
+
+    #[test]
+    fn test_angles_0() {
+        let (weather, angles, speed, altitude, extra) = (false, true, false, false, false);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP RLL TAR LC\n"
+        )
+    }
+
+    #[test]
+    fn test_angles_1() {
+        let (weather, angles, speed, altitude, extra) = (false, true, true, false, false);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP TAS IAS MACH RLL TAR LC\n"
+        )
+    }
+
+    #[test]
+    fn test_angles_2() {
+        let (weather, angles, speed, altitude, extra) = (false, true, true, true, false);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH RLL TAR LC\n"
+        )
+    }
+
+    #[test]
+    fn test_angles_3() {
+        let (weather, angles, speed, altitude, extra) = (false, true, true, true, true);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH RLL TAR VX DF TC V S PTH LC\n"
+        )
+    }
+
+    #[test]
+    fn test_speed_0() {
+        let (weather, angles, speed, altitude, extra) = (false, false, true, false, false);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP TAS IAS MACH LC\n"
+        )
+    }
+
+    #[test]
+    fn test_speed_1() {
+        let (weather, angles, speed, altitude, extra) = (false, false, true, true, false);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+             "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH LC\n"
+        )
+    }
+
+    #[test]
+    fn test_speed_2() {
+        let (weather, angles, speed, altitude, extra) = (false, false, true, true, true);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH VX DF TC V S PTH LC\n"
+        )
+    }
+
+    #[test]
+    fn test_altitude_0() {
+        let (weather, angles, speed, altitude, extra) = (false, false, false, true, false);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO LC\n"
+        )
+    }
+
+    #[test]
+    fn test_altitude_1() {
+        let (weather, angles, speed, altitude, extra) = (false, false, false, true, true);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO VX DF TC V S PTH LC\n"
+        )
+    }
+
+    #[test]
+    fn test_extra_0() {
+        let (weather, angles, speed, altitude, extra) = (false, false, false, false, true);
+        let headers = get_header(weather, angles, speed, altitude, extra);
+        assert_eq!(
+            headers.0,
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP VX DF TC V S PTH LC\n"
+        )
     }
 }
