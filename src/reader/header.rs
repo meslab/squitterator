@@ -32,15 +32,14 @@ fn get_header(
         ("LONGITUDE", 11),
         ("DIST", 5),
         ("ALT B", 5),
-        ("VRATE", 5),
-        ("TRK", 3),
-        ("HDG", 3),
-        ("GSP", 3),
     ];
 
     if altitude {
         headers.extend([("ALT G", 5), ("ALT S", 5), ("BARO", 4)]);
     }
+
+    headers.extend([("VRATE", 5), ("TRK", 3), ("HDG", 3), ("GSP", 3)]);
+
     if speed {
         headers.extend([("TAS", 3), ("IAS", 3), ("MACH", 4)]);
     }
@@ -134,7 +133,7 @@ mod tests {
         let headers = get_header(weather, angles, speed, altitude, extra);
         assert_eq!(
             headers.0,
-           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB LC\n"
+           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB LC\n"
         )
     }
 
@@ -144,7 +143,7 @@ mod tests {
         let headers = get_header(weather, angles, speed, altitude, extra);
         assert_eq!(
             headers.0,
-           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB VX DF TC V S PTH LC\n"
+           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB VX DF TC V S PTH LC\n"
         )
     }
 
@@ -174,7 +173,7 @@ mod tests {
         let headers = get_header(weather, angles, speed, altitude, extra);
         assert_eq!(
             headers.0,
-            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH RLL TAR LC\n"
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH RLL TAR LC\n"
         )
     }
 
@@ -184,7 +183,7 @@ mod tests {
         let headers = get_header(weather, angles, speed, altitude, extra);
         assert_eq!(
             headers.0,
-            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH RLL TAR VX DF TC V S PTH LC\n"
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH RLL TAR VX DF TC V S PTH LC\n"
         )
     }
 
@@ -204,7 +203,7 @@ mod tests {
         let headers = get_header(weather, angles, speed, altitude, extra);
         assert_eq!(
             headers.0,
-             "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH LC\n"
+             "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH LC\n"
         )
     }
 
@@ -214,7 +213,7 @@ mod tests {
         let headers = get_header(weather, angles, speed, altitude, extra);
         assert_eq!(
             headers.0,
-            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO TAS IAS MACH VX DF TC V S PTH LC\n"
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH VX DF TC V S PTH LC\n"
         )
     }
 
@@ -224,7 +223,7 @@ mod tests {
         let headers = get_header(weather, angles, speed, altitude, extra);
         assert_eq!(
             headers.0,
-            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO LC\n"
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP LC\n"
         )
     }
 
@@ -234,7 +233,7 @@ mod tests {
         let headers = get_header(weather, angles, speed, altitude, extra);
         assert_eq!(
             headers.0,
-            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP ALT G ALT S BARO VX DF TC V S PTH LC\n"
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP VX DF TC V S PTH LC\n"
         )
     }
 
