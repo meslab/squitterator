@@ -1,5 +1,6 @@
 use crate::decoder;
 
+#[derive(Debug)]
 pub struct Capability {
     pub flags: u32,
     pub bds20: bool,
