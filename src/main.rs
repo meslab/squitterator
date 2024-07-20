@@ -10,8 +10,8 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader, Write};
 use std::net::TcpStream;
-use std::sync::Mutex;
-use std::thread::sleep;
+use std::sync::{Arc, Mutex};
+use std::thread::{self, sleep};
 use std::time::Duration;
 
 #[derive(Parser)]
@@ -97,7 +97,7 @@ fn main() -> io::Result<()> {
     let error_log_file = File::create(&args.error_log).expect("Unable to create log file");
     let error_log_file = Mutex::new(error_log_file);
 
-    let mut planes: HashMap<u32, Plane> = HashMap::new();
+    let planes: Arc<Mutex<HashMap<u32, Plane>>> = Arc::new(Mutex::new(HashMap::new()));
 
     let coords = if let Some(coord_str) = &args.observer_coord {
         match coord_str.parse::<Coordinates>() {
@@ -121,29 +121,34 @@ fn main() -> io::Result<()> {
         })
         .init();
 
-    match !args.tcp.is_empty() {
-        true => loop {
-            let stream = match TcpStream::connect(&args.tcp) {
-                Ok(stream) => {
-                    info!("Successfully connected to the server {}", &args.tcp);
-                    stream
-                }
-                Err(e) => {
-                    error!("Failed to connect: {}", e);
+    let reader_thread = {
+        let planes = planes.clone();
+        thread::spawn(move || match !args.tcp.is_empty() {
+            true => loop {
+                let stream = match TcpStream::connect(&args.tcp) {
+                    Ok(stream) => {
+                        info!("Successfully connected to the server {}", &args.tcp);
+                        stream
+                    }
+                    Err(e) => {
+                        error!("Failed to connect: {}", e);
+                        continue;
+                    }
+                };
+                let reader = BufReader::new(stream);
+                if let Err(e) = read_lines(reader, &args, planes.clone()) {
+                    error!("Error during reading: {}", e);
+                    sleep(Duration::from_secs(5));
                     continue;
                 }
-            };
-            let reader = BufReader::new(stream);
-            if let Err(e) = read_lines(reader, &args, &mut planes) {
-                error!("Error during reading: {}", e);
-                sleep(Duration::from_secs(5));
-                continue;
+            },
+            _ => {
+                let file = File::open(&args.source)?;
+                let reader = BufReader::new(file);
+                read_lines(reader, &args, planes.clone())
             }
-        },
-        _ => {
-            let file = File::open(&args.source)?;
-            let reader = BufReader::new(file);
-            read_lines(reader, &args, &mut planes)
-        }
-    }
+        })
+    };
+
+    reader_thread.join().unwrap()
 }

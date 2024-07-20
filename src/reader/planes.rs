@@ -1,9 +1,10 @@
 use crate::Args;
 use squitterator::decoder::{format_simple_display, Plane};
 use std::collections::HashMap;
+use std::sync::MutexGuard;
 
 pub(super) fn print_planes(
-    planes: &mut HashMap<u32, Plane>,
+    planes: &MutexGuard<HashMap<u32, Plane>>,
     args: &Args,
     weather: bool,
     angles: bool,
