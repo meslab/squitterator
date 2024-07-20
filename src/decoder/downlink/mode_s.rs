@@ -178,7 +178,7 @@ impl decoder::Downlink for Mds {
                 bds = (4, 4);
             }
         }
-        if bds == (4, 5) {
+        if bds == (0, 0) {
             self.temperature = decoder::is_bds_4_5(message);
         }
         debug!("DF:{} BDS:{}.{}", self.df.unwrap_or(0), bds.0, bds.1);
