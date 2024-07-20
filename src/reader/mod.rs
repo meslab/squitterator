@@ -9,6 +9,7 @@ use planes::print_planes;
 use crate::Args;
 use squitterator::decoder::{self, df, icao, Downlink};
 use squitterator::decoder::{message, Plane};
+use std::sync::Arc;
 //use squitterator::;
 use decoder::UpdateFromDownlink;
 
@@ -21,7 +22,7 @@ use std::sync::Mutex;
 pub(super) fn read_lines<R: BufRead>(
     reader: R,
     args: &Args,
-    planes: &mut HashMap<u32, Plane>,
+    planes: Arc<Mutex<HashMap<u32, Plane>>>,
 ) -> Result<()> {
     let downlink_error_log_file = args
         .downlink_log
@@ -73,6 +74,7 @@ pub(super) fn read_lines<R: BufRead>(
 
                     if let Some(icao) = icao(&message, df) {
                         if let Ok(downlink) = decoder::DF::from_message(&message) {
+                            let mut planes = planes.lock().unwrap();
                             planes
                                 .entry(icao)
                                 .and_modify(|p| {
@@ -95,6 +97,7 @@ pub(super) fn read_lines<R: BufRead>(
 
                         let now = chrono::Utc::now();
                         if now.signed_duration_since(timestamp).num_seconds() > args.update {
+                            let mut planes = planes.lock().unwrap();
                             planes.retain(|_, plane| {
                                 let elapsed =
                                     now.signed_duration_since(plane.timestamp).num_seconds();
@@ -118,7 +121,7 @@ pub(super) fn read_lines<R: BufRead>(
                                     true,
                                 );
                                 print_planes(
-                                    planes,
+                                    &planes,
                                     args,
                                     display_flags.contains(&'w'),
                                     display_flags.contains(&'a'),

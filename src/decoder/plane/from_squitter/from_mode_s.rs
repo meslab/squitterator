@@ -102,7 +102,7 @@ impl Plane {
                 debug!("DF:{} B:4.4 FOM:{:b}", df, message[8] & 0xF);
             }
         }
-        if bds == (4, 5) {
+        if bds == (0, 0) {
             self.temperature = decoder::is_bds_4_5(message);
         }
         debug!("DF:{} BDS:{}.{}", df, bds.0, bds.1);
