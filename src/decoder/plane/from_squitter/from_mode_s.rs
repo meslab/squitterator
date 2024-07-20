@@ -103,7 +103,9 @@ impl Plane {
             }
         }
         if bds == (0, 0) {
-            self.temperature = decoder::is_bds_4_5(message);
+            if let Some(value) = decoder::is_bds_4_5(message) {
+                self.temperature = Some(value)
+            }
         }
         debug!("DF:{} BDS:{}.{}", df, bds.0, bds.1);
     }
