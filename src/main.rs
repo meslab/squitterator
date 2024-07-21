@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader, Write};
 use std::net::TcpStream;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::thread::{self, sleep};
 use std::time::Duration;
 
@@ -97,7 +97,7 @@ fn main() -> io::Result<()> {
     let error_log_file = File::create(&args.error_log).expect("Unable to create log file");
     let error_log_file = Mutex::new(error_log_file);
 
-    let planes: Arc<Mutex<HashMap<u32, Plane>>> = Arc::new(Mutex::new(HashMap::new()));
+    let planes: Arc<RwLock<HashMap<u32, Plane>>> = Arc::new(RwLock::new(HashMap::new()));
 
     let coords = if let Some(coord_str) = &args.observer_coord {
         match coord_str.parse::<Coordinates>() {
