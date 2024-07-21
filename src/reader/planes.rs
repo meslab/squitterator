@@ -1,10 +1,10 @@
 use crate::Args;
 use squitterator::decoder::{format_simple_display, Plane};
 use std::collections::HashMap;
-use std::sync::MutexGuard;
+use std::sync::{Arc, RwLock};
 
 pub(super) fn print_planes(
-    planes: &MutexGuard<HashMap<u32, Plane>>,
+    planes: &Arc<RwLock<HashMap<u32, Plane>>>,
     args: &Args,
     weather: bool,
     angles: bool,
@@ -12,6 +12,7 @@ pub(super) fn print_planes(
     altitude: bool,
     extra: bool,
 ) {
+    let planes = planes.read().unwrap();
     let mut planes_vector: Vec<(&u32, &Plane)> = planes.iter().collect();
     planes_vector.sort_by_cached_key(|&(k, _)| k);
     for order_by in &args.order_by {

@@ -9,7 +9,7 @@ use planes::print_planes;
 use crate::Args;
 use squitterator::decoder::{self, df, icao, Downlink};
 use squitterator::decoder::{message, Plane};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 //use squitterator::;
 use decoder::UpdateFromDownlink;
 
@@ -22,7 +22,7 @@ use std::sync::Mutex;
 pub(super) fn read_lines<R: BufRead>(
     reader: R,
     args: &Args,
-    planes: Arc<Mutex<HashMap<u32, Plane>>>,
+    planes: Arc<RwLock<HashMap<u32, Plane>>>,
 ) -> Result<()> {
     let downlink_error_log_file = args
         .downlink_log
@@ -43,6 +43,7 @@ pub(super) fn read_lines<R: BufRead>(
 
     let mut df_count = BTreeMap::new();
     let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
+    let mut cleanup_count = 0u32;
     for line in reader.lines() {
         match line {
             Ok(squitter) => {
@@ -73,18 +74,41 @@ pub(super) fn read_lines<R: BufRead>(
                     }
 
                     if let Some(icao) = icao(&message, df) {
+                        let now = chrono::Utc::now();
                         if let Ok(downlink) = decoder::DF::from_message(&message) {
-                            let mut planes = planes.lock().unwrap();
-                            planes
-                                .entry(icao)
-                                .and_modify(|p| {
-                                    if df < 20 && !&args.use_update_method {
-                                        p.update_from_downlink(&downlink)
-                                    } else {
-                                        p.update(&message, df, args.relaxed)
-                                    }
-                                })
-                                .or_insert(Plane::from_downlink(&downlink, icao));
+                            if let Ok(mut planes) = planes.write() {
+                                planes
+                                    .entry(icao)
+                                    .and_modify(|p| {
+                                        if df < 20 && !&args.use_update_method {
+                                            p.update_from_downlink(&downlink)
+                                        } else {
+                                            p.update(&message, df, args.relaxed)
+                                        }
+                                    })
+                                    .or_insert(Plane::from_downlink(&downlink, icao));
+
+                                if cleanup_count > 100 {
+                                    planes.retain(|_, plane| {
+                                        let elapsed = now
+                                            .signed_duration_since(plane.timestamp)
+                                            .num_seconds();
+                                        if elapsed < 60 {
+                                            true
+                                        } else {
+                                            debug!(
+                                                "Plane {} has been removed from view",
+                                                plane.icao
+                                            );
+                                            false
+                                        }
+                                    });
+                                    planes.shrink_to_fit();
+                                    cleanup_count = 0;
+                                }
+
+                                cleanup_count += 1;
+                            };
                         }
 
                         if let Some(ref dlf) = downlink_error_log_file {
@@ -95,60 +119,45 @@ pub(super) fn read_lines<R: BufRead>(
                             }
                         }
 
-                        let now = chrono::Utc::now();
-                        if now.signed_duration_since(timestamp).num_seconds() > args.update {
-                            let mut planes = planes.lock().unwrap();
-                            planes.retain(|_, plane| {
-                                let elapsed =
-                                    now.signed_duration_since(plane.timestamp).num_seconds();
-                                if elapsed < 60 {
-                                    true
-                                } else {
-                                    debug!("Plane {} has been removed from view", plane.icao);
-                                    false
-                                }
-                            });
-                            planes.shrink_to_fit();
+                        if now.signed_duration_since(timestamp).num_seconds() > args.update
+                            && !display_flags.contains(&'Q')
+                        {
+                            clear_screen();
+                            print_header(
+                                display_flags.contains(&'w'),
+                                display_flags.contains(&'a'),
+                                display_flags.contains(&'s'),
+                                display_flags.contains(&'A'),
+                                display_flags.contains(&'e'),
+                                true,
+                            );
+                            print_planes(
+                                &planes,
+                                args,
+                                display_flags.contains(&'w'),
+                                display_flags.contains(&'a'),
+                                display_flags.contains(&'s'),
+                                display_flags.contains(&'A'),
+                                display_flags.contains(&'e'),
+                            );
+                            print_header(
+                                display_flags.contains(&'w'),
+                                display_flags.contains(&'a'),
+                                display_flags.contains(&'s'),
+                                display_flags.contains(&'A'),
+                                display_flags.contains(&'e'),
+                                false,
+                            );
 
-                            if !display_flags.contains(&'Q') {
-                                clear_screen();
-                                print_header(
-                                    display_flags.contains(&'w'),
-                                    display_flags.contains(&'a'),
-                                    display_flags.contains(&'s'),
-                                    display_flags.contains(&'A'),
-                                    display_flags.contains(&'e'),
-                                    true,
-                                );
-                                print_planes(
-                                    &planes,
-                                    args,
-                                    display_flags.contains(&'w'),
-                                    display_flags.contains(&'a'),
-                                    display_flags.contains(&'s'),
-                                    display_flags.contains(&'A'),
-                                    display_flags.contains(&'e'),
-                                );
-                                print_header(
-                                    display_flags.contains(&'w'),
-                                    display_flags.contains(&'a'),
-                                    display_flags.contains(&'s'),
-                                    display_flags.contains(&'A'),
-                                    display_flags.contains(&'e'),
-                                    false,
-                                );
-
-                                if args.count_df {
-                                    let result =
-                                        df_count.iter().fold(String::new(), |acc, (df, count)| {
-                                            acc + &format!("DF{}:{} ", df, count)
-                                        });
-                                    println!("{}", result);
-                                }
-
-                                debug!("{}", planes[&icao]);
-                                timestamp = now;
+                            if args.count_df {
+                                let result =
+                                    df_count.iter().fold(String::new(), |acc, (df, count)| {
+                                        acc + &format!("DF{}:{} ", df, count)
+                                    });
+                                println!("{}", result);
                             }
+
+                            timestamp = now;
                         }
                     }
                 };
