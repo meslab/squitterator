@@ -103,7 +103,7 @@ fn main() -> io::Result<()> {
         match coord_str.parse::<Coordinates>() {
             Ok(coords) => Some((coords.lat, coords.lon)),
             Err(e) => {
-                eprintln!("Error parsing coordinates: {}", e);
+                error!("Error parsing coordinates: {}", e);
                 None
             }
         }
@@ -150,5 +150,7 @@ fn main() -> io::Result<()> {
         })
     };
 
-    reader_thread.join().unwrap()
+    reader_thread
+        .join()
+        .expect("Couldn't join on the associated thread")
 }
