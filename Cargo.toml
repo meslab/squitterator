@@ -9,3 +9,8 @@ clap = { version = "4.5.20", features = ["derive"] }
 env_logger = "0.11.5"
 lazy_static = "1.5.0"
 log = "0.4.22"
+
+[profile.release]
+panic = "abort"
+opt-level = "s"
+lto = true
