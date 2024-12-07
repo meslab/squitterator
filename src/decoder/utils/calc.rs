@@ -60,8 +60,8 @@ pub(crate) fn status_flag_and_range_value(
 }
 
 fn bit_location(position: u32) -> (usize, usize) {
-    let ibyte: usize = ((position - 1) / 4).try_into().unwrap();
-    let ibit: usize = ((position - 1) % 4).try_into().unwrap();
+    let ibyte: usize = ((position - 1) / 4).try_into().expect("Cannot set ibyte.");
+    let ibit: usize = ((position - 1) % 4).try_into().expect("Cannot set ibit.");
     (ibyte, ibit)
 }
 

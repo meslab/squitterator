@@ -9,7 +9,9 @@ pub(super) fn print_planes(
     args: &Args,
     display_flags: &DisplayFlags,
 ) {
-    let planes = planes.read().unwrap();
+    let planes = planes
+        .read()
+        .expect("Failed to acquire read lock on planes.");
     let mut planes_vector: Vec<(&u32, &Plane)> = planes.iter().collect();
     planes_vector.sort_by_cached_key(|&(k, _)| k);
     for order_by in &args.order_by {

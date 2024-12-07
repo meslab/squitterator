@@ -115,7 +115,8 @@ pub(super) fn read_lines<R: BufRead>(
 
                         if let Some(ref dlf) = downlink_error_log_file {
                             if let Ok(downlink) = decoder::DF::from_message(&message) {
-                                let mut dlf = dlf.lock().unwrap();
+                                let mut dlf =
+                                    dlf.lock().expect("Cannot open downlink error log file.");
                                 write!(dlf, "{}", downlink)?;
                                 debug!("Writing to {:?}", &dlf);
                             }

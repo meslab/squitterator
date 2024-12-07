@@ -54,8 +54,10 @@ impl LegendHeaders {
             (String::new(), String::new()),
             |(mut header_line, mut separator_line), &(header, width)| {
                 use std::fmt::Write;
-                write!(&mut header_line, "{:>width$} ", header, width = width).unwrap();
-                write!(&mut separator_line, "{:-<width$} ", "", width = width).unwrap();
+                write!(&mut header_line, "{:>width$} ", header, width = width)
+                    .expect("Cannot set header.");
+                write!(&mut separator_line, "{:-<width$} ", "", width = width)
+                    .expect("Cannot set separator.");
                 (header_line, separator_line)
             },
         );
