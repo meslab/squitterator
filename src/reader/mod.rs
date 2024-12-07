@@ -41,7 +41,7 @@ pub(super) fn read_lines<R: BufRead>(
 
     if !display_flags_vec.contains(&'Q') {
         clear_screen();
-        print_legend(
+        print_legend(  // TODO: use DisplayFlags
             display_flags_vec.contains(&'w'),
             display_flags_vec.contains(&'a'),
             display_flags_vec.contains(&'s'),
