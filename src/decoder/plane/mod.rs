@@ -1,5 +1,7 @@
 mod from_downlink;
 mod from_squitter;
+pub mod header;
+pub mod legend;
 mod simple_display;
 
 use crate::decoder::Capability;

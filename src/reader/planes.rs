@@ -1,55 +1,8 @@
 use crate::Args;
+use squitterator::decoder::header::DisplayFlags;
 use squitterator::decoder::{format_simple_display, Plane};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-
-pub(super) struct DisplayFlags {
-    pub(super) bits: u8,
-}
-
-impl DisplayFlags {
-    pub(super) fn new(
-        weather: bool,
-        angles: bool,
-        speed: bool,
-        altitude: bool,
-        extra: bool,
-    ) -> Self {
-        let mut bits = 0u8;
-        if weather {
-            bits |= 1 << 0;
-        }
-        if angles {
-            bits |= 1 << 1;
-        }
-        if speed {
-            bits |= 1 << 2;
-        }
-        if altitude {
-            bits |= 1 << 3;
-        }
-        if extra {
-            bits |= 1 << 4;
-        }
-        DisplayFlags { bits }
-    }
-
-    pub(super) fn weather(&self) -> bool {
-        self.bits & (1 << 0) != 0
-    }
-    pub(super) fn angles(&self) -> bool {
-        self.bits & (1 << 1) != 0
-    }
-    pub(super) fn speed(&self) -> bool {
-        self.bits & (1 << 2) != 0
-    }
-    pub(super) fn altitude(&self) -> bool {
-        self.bits & (1 << 3) != 0
-    }
-    pub(super) fn extra(&self) -> bool {
-        self.bits & (1 << 4) != 0
-    }
-}
 
 pub(super) fn print_planes(
     planes: &Arc<RwLock<HashMap<u32, Plane>>>,

@@ -1,12 +1,10 @@
-use super::planes::DisplayFlags;
-
-pub(super) struct LegendHeaders {
-    pub(super) header: String,
-    pub(super) separator: String,
+pub struct LegendHeaders {
+    pub header: String,
+    pub separator: String,
 }
 
 impl LegendHeaders {
-    pub(super) fn from_display_flags(display_flags: &DisplayFlags) -> Self {
+    pub fn from_display_flags(display_flags: &DisplayFlags) -> Self {
         let mut headers = vec![
             ("ICAO", 6),
             ("RG", 2),
@@ -68,12 +66,54 @@ impl LegendHeaders {
         }
     }
 
-    pub(super) fn print_header(&self) {
+    pub fn print_header(&self) {
         print!("{}", self.header);
     }
 
-    pub(super) fn print_separator(&self) {
+    pub fn print_separator(&self) {
         print!("{}", self.separator);
+    }
+}
+
+pub struct DisplayFlags {
+    pub bits: u8,
+}
+
+impl DisplayFlags {
+    pub fn new(weather: bool, angles: bool, speed: bool, altitude: bool, extra: bool) -> Self {
+        let mut bits = 0u8;
+        if weather {
+            bits |= 1 << 0;
+        }
+        if angles {
+            bits |= 1 << 1;
+        }
+        if speed {
+            bits |= 1 << 2;
+        }
+        if altitude {
+            bits |= 1 << 3;
+        }
+        if extra {
+            bits |= 1 << 4;
+        }
+        DisplayFlags { bits }
+    }
+
+    pub fn weather(&self) -> bool {
+        self.bits & (1 << 0) != 0
+    }
+    pub fn angles(&self) -> bool {
+        self.bits & (1 << 1) != 0
+    }
+    pub fn speed(&self) -> bool {
+        self.bits & (1 << 2) != 0
+    }
+    pub fn altitude(&self) -> bool {
+        self.bits & (1 << 3) != 0
+    }
+    pub fn extra(&self) -> bool {
+        self.bits & (1 << 4) != 0
     }
 }
 

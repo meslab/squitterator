@@ -1,17 +1,14 @@
-mod header;
-mod legend;
 mod planes;
 
-use header::LegendHeaders;
-use legend::print_legend;
-use planes::{print_planes, DisplayFlags};
+use planes::print_planes;
+use squitterator::decoder::header::{DisplayFlags, LegendHeaders};
+use squitterator::decoder::legend::print_legend;
 
 use crate::Args;
+use decoder::UpdateFromDownlink;
 use squitterator::decoder::{self, df, icao, Downlink};
 use squitterator::decoder::{message, Plane};
 use std::sync::{Arc, RwLock};
-//use squitterator::;
-use decoder::UpdateFromDownlink;
 
 use log::{debug, error, warn};
 use std::collections::{BTreeMap, HashMap};

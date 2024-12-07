@@ -1,6 +1,6 @@
-use super::planes::DisplayFlags;
+use super::header::DisplayFlags;
 
-pub(super) fn print_legend(display_flags: &DisplayFlags) {
+pub fn print_legend(display_flags: &DisplayFlags) {
     let legend = [
         ("ICAO", "ICAO Address"),
         ("RG", "Registraton Country Code"),
