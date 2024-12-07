@@ -21,7 +21,6 @@ use std::time::Duration;
     author = "Anton Sidorov tonysidrock@gmail.com",
     about = "ADS-B squitter decoder"
 )]
-
 struct Args {
     #[clap(short, long, help = "Count squitters by type")]
     count_df: bool,

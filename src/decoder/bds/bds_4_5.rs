@@ -16,10 +16,3 @@ pub(crate) fn is_bds_4_5(message: &[u32]) -> Option<f64> {
         None
     }
 }
-//#[cfg(test)]
-//mod tests {
-//    use super::*;
-//
-//    #[test]
-//    fn test_is_bds_4_5()
-//}

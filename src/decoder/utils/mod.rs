@@ -67,19 +67,6 @@ pub(crate) fn message_type(message: &[u32]) -> (u32, u32) {
     ((message[8] << 1) | (message[9] >> 3), message[9] & 7)
 }
 
-/// Retrieves the IC (Interrogator Code) value from a message.
-///
-/// # Arguments
-///
-/// * `message` - The message to extract the IC value from.
-///
-/// # Returns
-///
-/// The IC value.
-//pub(crate) fn ic(message: &[u32]) -> u32 {
-//    (message[2] << 1) | (message[3] >> 3) & 0b11111
-//}
-
 /// Retrieves the CA (Capability) value from a message.
 ///
 /// # Arguments

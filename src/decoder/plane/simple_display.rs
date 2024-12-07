@@ -230,7 +230,7 @@ impl SimpleDisplay for Plane {
 
 pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool, bool, bool, bool, bool);
 
-impl<'a, T: SimpleDisplay> fmt::Display for SimpleDisplayWrapper<'a, T> {
+impl<T: SimpleDisplay> fmt::Display for SimpleDisplayWrapper<'_, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.0
             .simple_display(f, self.1, self.2, self.3, self.4, self.5)

@@ -9,8 +9,8 @@
 /// The corresponding `char` value.
 fn ia5(ch: u32) -> char {
     match ch {
-        48..=57 => char::from_u32(ch).unwrap(),
-        1..=26 => char::from_u32(ch | 64).unwrap(),
+        48..=57 => char::from_u32(ch).unwrap_or(' '),
+        1..=26 => char::from_u32(ch | 64).unwrap_or(' '),
         _ => ' ',
     }
 }

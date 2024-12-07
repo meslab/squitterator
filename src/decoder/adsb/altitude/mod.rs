@@ -23,7 +23,7 @@ pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
             info!(
                 "DF:{} C:{:b} M:{} ALT:{}",
                 df,
-                code.unwrap(),
+                code?,
                 crate::decoder::hex_message(message),
                 a
             );
