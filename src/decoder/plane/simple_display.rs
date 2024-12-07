@@ -1,30 +1,14 @@
-use super::Plane;
+use super::{header::DisplayFlags, Plane};
 use crate::decoder;
 use chrono::Utc;
 use std::fmt;
 
 pub trait SimpleDisplay {
-    fn simple_display(
-        &self,
-        f: &mut fmt::Formatter,
-        weather: bool,
-        angles: bool,
-        speed: bool,
-        altitude: bool,
-        extra: bool,
-    ) -> fmt::Result;
+    fn simple_display(&self, f: &mut fmt::Formatter, display_flags: &DisplayFlags) -> fmt::Result;
 }
 
 impl SimpleDisplay for Plane {
-    fn simple_display(
-        &self,
-        f: &mut fmt::Formatter,
-        weather: bool,
-        angles: bool,
-        speed: bool,
-        altitude: bool,
-        extra: bool,
-    ) -> fmt::Result {
+    fn simple_display(&self, f: &mut fmt::Formatter, display_flags: &DisplayFlags) -> fmt::Result {
         write!(f, "{:06X} ", self.icao)?;
         write!(f, "{:2} ", self.reg)?;
         if let Some(squawk) = self.squawk {
@@ -63,7 +47,7 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, "{:5} ", "")?;
         }
-        if altitude {
+        if display_flags.altitude() {
             if let Some(altitude_gnss) = self.altitude_gnss {
                 write!(f, "{:>5} ", altitude_gnss)?;
             } else {
@@ -103,7 +87,7 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, "{:3} ", "")?;
         }
-        if speed {
+        if display_flags.speed() {
             if let Some(tas) = self.true_airspeed {
                 write!(f, "{:>3} ", tas)?;
             } else {
@@ -120,7 +104,7 @@ impl SimpleDisplay for Plane {
                 write!(f, "{:4} ", "")?;
             }
         }
-        if angles {
+        if display_flags.angles() {
             if let Some(roll_angle) = self.roll_angle {
                 write!(f, "{:>3} ", roll_angle)?;
             } else {
@@ -132,7 +116,7 @@ impl SimpleDisplay for Plane {
                 write!(f, "{:3} ", "")?;
             }
         }
-        if weather {
+        if display_flags.weather() {
             if let Some(temperature) = self.temperature {
                 write!(f, "{:>5.1} ", temperature)?;
             } else {
@@ -160,7 +144,7 @@ impl SimpleDisplay for Plane {
                 write!(f, "{:2} ", "")?;
             }
         }
-        if extra {
+        if display_flags.extra() {
             write!(f, "{}{} ", self.category.0, self.category.1)?;
             if self.last_df != 0 {
                 write!(f, "{:>2} ", self.last_df)?;
@@ -228,25 +212,14 @@ impl SimpleDisplay for Plane {
     }
 }
 
-pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, bool, bool, bool, bool, bool);
+pub struct SimpleDisplayWrapper<'a, T: SimpleDisplay>(&'a T, &'a DisplayFlags);
 
 impl<T: SimpleDisplay> fmt::Display for SimpleDisplayWrapper<'_, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0
-            .simple_display(f, self.1, self.2, self.3, self.4, self.5)
+        self.0.simple_display(f, self.1)
     }
 }
 
-pub fn format_simple_display<T: SimpleDisplay>(
-    item: &T,
-    weather: bool,
-    angles: bool,
-    speed: bool,
-    altitude: bool,
-    extra: bool,
-) -> String {
-    format!(
-        "{}",
-        SimpleDisplayWrapper(item, weather, angles, speed, altitude, extra)
-    )
+pub fn format_simple_display<T: SimpleDisplay>(item: &T, display_flags: &DisplayFlags) -> String {
+    format!("{}", SimpleDisplayWrapper(item, display_flags))
 }

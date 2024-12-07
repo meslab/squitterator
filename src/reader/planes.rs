@@ -70,17 +70,7 @@ pub(super) fn print_planes(
     print!(
         "{}",
         planes_vector.iter().fold(String::new(), |acc, (_, plane)| {
-            acc + &format!(
-                "{}\n",
-                format_simple_display(
-                    *plane,
-                    print_flags.weather(),
-                    print_flags.angles(),
-                    print_flags.speed(),
-                    print_flags.altitude(),
-                    print_flags.extra()
-                )
-            )
+            acc + &format!("{}\n", format_simple_display(*plane, print_flags))
         })
     )
 }
