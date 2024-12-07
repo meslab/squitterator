@@ -27,13 +27,13 @@ pub(crate) fn cpr_location(
         true => {
             let (ni, nlt, lngt) = match cpr_form {
                 1 => (
-                    *[nl[1] / coeff - 1, 1].iter().max().unwrap(), // coeff = 4 for ground location
-                    nl[1] / coeff, // coeff = 1 for airborne location
+                    *[nl[1] / coeff - 1, 1].iter().max()?, // coeff = 4 for ground location
+                    nl[1] / coeff,                         // coeff = 1 for airborne location
                     cpr_lon[1],
                 ),
                 _ => (
-                    *[nl[0] / coeff, 1].iter().max().unwrap(), // coeff = 4 for ground location
-                    nl[0] / coeff,                             // coeff = 1 for airborne location
+                    *[nl[0] / coeff, 1].iter().max()?, // coeff = 4 for ground location
+                    nl[0] / coeff,                     // coeff = 1 for airborne location
                     cpr_lon[0],
                 ),
             };

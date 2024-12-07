@@ -13,9 +13,11 @@ pub(crate) fn get_crc(message: &[u32], df: u32) -> u32 {
 
 fn crc112(message: &[u32]) -> u32 {
     let poly = 0xFFFA0480u32;
-    let mut data = range_value(message, 1, 32).unwrap();
-    let mut data1 = range_value(message, 33, 64).unwrap();
-    let mut data2 = range_value(message, 65, 88).map(|x| x << 8).unwrap();
+    let mut data = range_value(message, 1, 32).expect("Cannot set data in crc112.");
+    let mut data1 = range_value(message, 33, 64).expect("Cannot set data1 in crc112.");
+    let mut data2 = range_value(message, 65, 88)
+        .map(|x| x << 8)
+        .expect("Cannot set data2 in crc112.");
 
     for _ in 1..=88 {
         if data & 0x80000000 != 0 {
@@ -38,7 +40,7 @@ fn crc112(message: &[u32]) -> u32 {
 
 fn crc56(message: &[u32]) -> u32 {
     let poly = 0xFFFA0480;
-    let mut data = range_value(message, 1, 32).unwrap();
+    let mut data = range_value(message, 1, 32).expect("Cannot set data in crc56.");
 
     for _ in 0..32 {
         if (data & 0x80000000) != 0 {

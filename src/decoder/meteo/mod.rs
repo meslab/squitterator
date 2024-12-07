@@ -26,10 +26,8 @@ fn wind_direction(message: &[u32]) -> Option<u32> {
 
 pub(crate) fn wind_4_4(message: &[u32]) -> Option<(u32, u32)> {
     wind_speed(message).map(|wind_speed| {
-        wind_direction(message)
-            .map(|wind_direction| (wind_speed, wind_direction))
-            .unwrap()
-    })
+        wind_direction(message).map(|wind_direction| (wind_speed, wind_direction))
+    })?
 }
 
 pub(crate) fn turbulence_4_4(message: &[u32]) -> Option<u32> {

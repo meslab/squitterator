@@ -38,12 +38,16 @@ lazy_static! {
 
 // Function to set the observer's coordinates
 pub fn set_observer_coords(c: Option<(f64, f64)>) {
-    let mut coords = OBSERVER_COORDS.lock().unwrap();
+    let mut coords = OBSERVER_COORDS
+        .lock()
+        .expect("Cannot set observer's coordinates.");
     *coords = c;
 }
 
 // Function to get the observer's coordinates
 pub(crate) fn get_observer_coords() -> Option<(f64, f64)> {
-    let coords = OBSERVER_COORDS.lock().unwrap();
+    let coords = OBSERVER_COORDS
+        .lock()
+        .expect("Cannot get observer's coordinates.");
     *coords
 }

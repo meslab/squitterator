@@ -1,17 +1,14 @@
-mod header;
-mod legend;
 mod planes;
 
-use header::print_header;
-use legend::print_legend;
 use planes::print_planes;
+use squitterator::decoder::header::{DisplayFlags, LegendHeaders};
+use squitterator::decoder::legend::print_legend;
 
 use crate::Args;
+use decoder::UpdateFromDownlink;
 use squitterator::decoder::{self, df, icao, Downlink};
 use squitterator::decoder::{message, Plane};
 use std::sync::{Arc, RwLock};
-//use squitterator::;
-use decoder::UpdateFromDownlink;
 
 use log::{debug, error, warn};
 use std::collections::{BTreeMap, HashMap};
@@ -29,17 +26,22 @@ pub(super) fn read_lines<R: BufRead>(
         .as_ref()
         .map(|f| Mutex::new(File::create(f).expect("Unable to create downlink log file")));
 
-    let display_flags = args.display.concat().chars().collect::<Vec<char>>();
+    let display_flags_vec = args.display.concat().chars().collect::<Vec<char>>();
 
-    if !display_flags.contains(&'Q') {
+    let display_flags = DisplayFlags::new(
+        display_flags_vec.contains(&'w'),
+        display_flags_vec.contains(&'a'),
+        display_flags_vec.contains(&'s'),
+        display_flags_vec.contains(&'A'),
+        display_flags_vec.contains(&'e'),
+    );
+
+    if !display_flags_vec.contains(&'Q') {
         clear_screen();
-        print_legend(
-            display_flags.contains(&'w'),
-            display_flags.contains(&'a'),
-            display_flags.contains(&'s'),
-            display_flags.contains(&'e'),
-        );
+        print_legend(&display_flags);
     }
+
+    let headers = LegendHeaders::from_display_flags(&display_flags);
 
     let mut df_count = BTreeMap::new();
     let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
@@ -113,41 +115,22 @@ pub(super) fn read_lines<R: BufRead>(
 
                         if let Some(ref dlf) = downlink_error_log_file {
                             if let Ok(downlink) = decoder::DF::from_message(&message) {
-                                let mut dlf = dlf.lock().unwrap();
+                                let mut dlf =
+                                    dlf.lock().expect("Cannot open downlink error log file.");
                                 write!(dlf, "{}", downlink)?;
                                 debug!("Writing to {:?}", &dlf);
                             }
                         }
 
                         if now.signed_duration_since(timestamp).num_seconds() > args.update
-                            && !display_flags.contains(&'Q')
+                            && !display_flags_vec.contains(&'Q')
                         {
                             clear_screen();
-                            print_header(
-                                display_flags.contains(&'w'),
-                                display_flags.contains(&'a'),
-                                display_flags.contains(&'s'),
-                                display_flags.contains(&'A'),
-                                display_flags.contains(&'e'),
-                                true,
-                            );
-                            print_planes(
-                                &planes,
-                                args,
-                                display_flags.contains(&'w'),
-                                display_flags.contains(&'a'),
-                                display_flags.contains(&'s'),
-                                display_flags.contains(&'A'),
-                                display_flags.contains(&'e'),
-                            );
-                            print_header(
-                                display_flags.contains(&'w'),
-                                display_flags.contains(&'a'),
-                                display_flags.contains(&'s'),
-                                display_flags.contains(&'A'),
-                                display_flags.contains(&'e'),
-                                false,
-                            );
+
+                            headers.print_header();
+                            headers.print_separator();
+                            print_planes(&planes, args, &display_flags);
+                            headers.print_separator();
 
                             if args.count_df {
                                 let result =

@@ -22,8 +22,6 @@ use crate::decoder::get_crc;
 ///         }
 ///     }
 /// }
-/// ```
-
 pub fn icao(message: &[u32], df: u32) -> Option<u32> {
     match df {
         0 | 4 | 5 | 16 | 20 | 21 => {

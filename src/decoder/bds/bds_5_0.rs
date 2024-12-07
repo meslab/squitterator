@@ -44,34 +44,31 @@ impl Default for TrackAndTurn {
 }
 
 pub fn is_bds_5_0(message: &[u32]) -> Option<TrackAndTurn> {
-    if goodflags(message, 33, 34, 43)
-        && goodflags(message, 44, 45, 55)
-        && goodflags(message, 56, 57, 66)
-        && goodflags(message, 67, 68, 77)
-        && goodflags(message, 78, 79, 88)
+    if !goodflags(message, 33, 34, 43)
+        || !goodflags(message, 44, 45, 55)
+        || !goodflags(message, 56, 57, 66)
+        || !goodflags(message, 67, 68, 77)
+        || !goodflags(message, 78, 79, 88)
     {
-        let track = TrackAndTurn::from_data(
-            roll_angle_5_0(message).filter(|x| (-50..=50).contains(x)),
-            track_angle_5_0(message).filter(|x| (0..=360).contains(x)),
-            track_angle_rate_5_0(message).filter(|x| (0..=2046).contains(x)),
-            ground_speed_5_0(message).filter(|x| (0..=600).contains(x)),
-            true_airspeed_5_0(message).filter(|x| (0..=500).contains(x)),
-        );
-        if track.ground_speed.is_some()
-            && track.true_airspeed.is_some()
-            && track.roll_angle.is_some()
-            && track.track_angle.is_some()
-            && track.track_angle_rate.is_some()
-            && track
-                .ground_speed
-                .unwrap()
-                .abs_diff(track.true_airspeed.unwrap())
-                < 200
-        {
-            Some(track)
-        } else {
-            None
-        }
+        return None;
+    }
+
+    let track = TrackAndTurn::from_data(
+        roll_angle_5_0(message).filter(|x| (-50..=50).contains(x)),
+        track_angle_5_0(message).filter(|x| (0..=360).contains(x)),
+        track_angle_rate_5_0(message).filter(|x| (0..=2046).contains(x)),
+        ground_speed_5_0(message).filter(|x| (0..=600).contains(x)),
+        true_airspeed_5_0(message).filter(|x| (0..=500).contains(x)),
+    );
+
+    if track.ground_speed.is_some()
+        && track.true_airspeed.is_some()
+        && track.roll_angle.is_some()
+        && track.track_angle.is_some()
+        && track.track_angle_rate.is_some()
+        && track.ground_speed?.abs_diff(track.true_airspeed?) < 200
+    {
+        Some(track)
     } else {
         None
     }

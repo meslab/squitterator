@@ -46,7 +46,7 @@ impl Default for Meteo {
 }
 
 pub fn is_bds_4_4(message: &[u32]) -> Option<Meteo> {
-    let fom = decoder::range_value(message, 33, 36).unwrap();
+    let fom = decoder::range_value(message, 33, 36)?;
     if fom > 0b1000
         && decoder::goodflags(message, 37, 38, 55)
         && decoder::goodflags(message, 37, 57, 66)
@@ -63,10 +63,11 @@ pub fn is_bds_4_4(message: &[u32]) -> Option<Meteo> {
         );
         debug!(
             "DF:{} F:{:b} {:?}",
-            decoder::df(message).unwrap(),
-            decoder::range_value(message, 33, 36).unwrap(),
+            decoder::df(message)?,
+            decoder::range_value(message, 33, 36)?,
             meteo
         );
+
         if meteo.temp.is_some()
             // && meteo.wind.is_some()
             && meteo.humidity.is_some()

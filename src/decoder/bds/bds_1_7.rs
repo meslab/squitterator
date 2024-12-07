@@ -48,22 +48,18 @@ impl Default for Capability {
 }
 
 pub fn is_bds_1_7(message: &[u32]) -> Option<Capability> {
-    if let Some((bds20, reserved)) = decoder::flag_and_range_value(message, 39, 61, 88) {
-        if bds20 == 1 && reserved == 0 {
-            decoder::range_value(message, 33, 56).map(|capability| {
-                Capability::from_data(
-                    capability,
-                    (bds20 & 1) == 1,
-                    ((capability >> 15) & 1) == 1,
-                    ((capability >> 11) & 1) == 1,
-                    ((capability >> 8) & 1) == 1,
-                    (capability & 1) == 1,
-                )
-            })
-        } else {
-            None
-        }
-    } else {
-        None
+    let (bds20, reserved) = decoder::flag_and_range_value(message, 39, 61, 88)?;
+    if bds20 != 1 || reserved != 0 {
+        return None;
     }
+
+    let capability = decoder::range_value(message, 33, 56)?;
+    Some(Capability::from_data(
+        capability,
+        true,
+        ((capability >> 15) & 1) == 1,
+        ((capability >> 11) & 1) == 1,
+        ((capability >> 8) & 1) == 1,
+        (capability & 1) == 1,
+    ))
 }

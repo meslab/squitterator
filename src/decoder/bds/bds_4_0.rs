@@ -42,24 +42,24 @@ impl Default for SelectedVerticalIntention {
 }
 
 pub fn is_bds_4_0(message: &[u32]) -> Option<SelectedVerticalIntention> {
-    if decoder::goodflags(message, 33, 34, 45)
-        && decoder::goodflags(message, 46, 47, 58)
-        && decoder::goodflags(message, 59, 60, 71)
-        && !decoder::goodflags(message, 33, 72, 79)
-        && !decoder::goodflags(message, 33, 84, 85)
+    if !decoder::goodflags(message, 33, 34, 45)
+        || !decoder::goodflags(message, 46, 47, 58)
+        || !decoder::goodflags(message, 59, 60, 71)
+        || decoder::goodflags(message, 33, 72, 79)
+        || decoder::goodflags(message, 33, 84, 85)
     {
-        let intent = SelectedVerticalIntention::from_data(
-            decoder::mcp_selected_altitude(message).filter(|x| (0..=65530).contains(x)),
-            decoder::fms_selected_altitude(message).filter(|x| (0..=65530).contains(x)),
-            decoder::barometric_pressure_setting(message).filter(|x| (800..=1210).contains(x)),
-            decoder::target_altitude_source(message).filter(|x| (0..=3).contains(x)),
-        );
-        debug!("BDS:4.0 {:?}", intent);
-        if intent.mcp_selected_altitude.is_some() || intent.fms_selected_altitude.is_some() {
-            Some(intent)
-        } else {
-            None
-        }
+        return None;
+    }
+
+    let intent = SelectedVerticalIntention::from_data(
+        decoder::mcp_selected_altitude(message).filter(|x| (0..=65530).contains(x)),
+        decoder::fms_selected_altitude(message).filter(|x| (0..=65530).contains(x)),
+        decoder::barometric_pressure_setting(message).filter(|x| (800..=1210).contains(x)),
+        decoder::target_altitude_source(message).filter(|x| (0..=3).contains(x)),
+    );
+    debug!("BDS:4.0 {:?}", intent);
+    if intent.mcp_selected_altitude.is_some() || intent.fms_selected_altitude.is_some() {
+        Some(intent)
     } else {
         None
     }

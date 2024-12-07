@@ -1,4 +1,5 @@
 use crate::Args;
+use squitterator::decoder::header::DisplayFlags;
 use squitterator::decoder::{format_simple_display, Plane};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -6,13 +7,11 @@ use std::sync::{Arc, RwLock};
 pub(super) fn print_planes(
     planes: &Arc<RwLock<HashMap<u32, Plane>>>,
     args: &Args,
-    weather: bool,
-    angles: bool,
-    speed: bool,
-    altitude: bool,
-    extra: bool,
+    display_flags: &DisplayFlags,
 ) {
-    let planes = planes.read().unwrap();
+    let planes = planes
+        .read()
+        .expect("Failed to acquire read lock on planes.");
     let mut planes_vector: Vec<(&u32, &Plane)> = planes.iter().collect();
     planes_vector.sort_by_cached_key(|&(k, _)| k);
     for order_by in &args.order_by {
@@ -73,10 +72,7 @@ pub(super) fn print_planes(
     print!(
         "{}",
         planes_vector.iter().fold(String::new(), |acc, (_, plane)| {
-            acc + &format!(
-                "{}\n",
-                format_simple_display(*plane, weather, angles, speed, altitude, extra)
-            )
+            acc + &format!("{}\n", format_simple_display(*plane, display_flags))
         })
     );
 }

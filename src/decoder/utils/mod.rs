@@ -22,25 +22,24 @@ use log::{debug, warn};
 ///
 /// * `Option<Vec<u32>>` - An Option vector of u32 values representing the converted squitter string.
 pub fn message(squitter: &str) -> Option<Vec<u32>> {
-    match clean_squitter(squitter) {
-        Some(cleaned_squitter) => match cleaned_squitter.len() {
-            14 | 28 => {
-                let message = cleaned_squitter
-                    .chars()
-                    .map(|c| u32::from_str_radix(&c.to_string(), 16).unwrap())
-                    .collect::<Vec<u32>>();
-                debug!("Message: {:?}", message);
-                let r = reminder(&message);
-                match r {
-                    0 => Some(message),
-                    _ => {
-                        warn!("{}, R:{}", cleaned_squitter, r);
-                        None
-                    }
+    let cleaned_squitter = clean_squitter(squitter)?;
+    match cleaned_squitter.len() {
+        14 | 28 => {
+            let message = cleaned_squitter
+                .chars()
+                .filter_map(|c| u32::from_str_radix(&c.to_string(), 16).ok())
+                .collect::<Vec<u32>>();
+
+            debug!("Message: {:?}", message);
+
+            match reminder(&message) {
+                0 => Some(message),
+                r => {
+                    warn!("{}, R:{}", cleaned_squitter, r);
+                    None
                 }
             }
-            _ => None,
-        },
+        }
         _ => None,
     }
 }
@@ -66,19 +65,6 @@ pub(crate) fn hex_message(message: &[u32]) -> String {
 pub(crate) fn message_type(message: &[u32]) -> (u32, u32) {
     ((message[8] << 1) | (message[9] >> 3), message[9] & 7)
 }
-
-/// Retrieves the IC (Interrogator Code) value from a message.
-///
-/// # Arguments
-///
-/// * `message` - The message to extract the IC value from.
-///
-/// # Returns
-///
-/// The IC value.
-//pub(crate) fn ic(message: &[u32]) -> u32 {
-//    (message[2] << 1) | (message[3] >> 3) & 0b11111
-//}
 
 /// Retrieves the CA (Capability) value from a message.
 ///
