@@ -1,4 +1,6 @@
-pub(super) fn print_legend(weather: bool, angles: bool, speed: bool, extra: bool) {
+use super::planes::DisplayFlags;
+
+pub(super) fn print_legend(display_flags: &DisplayFlags) {
     let legend = [
         ("ICAO", "ICAO Address"),
         ("RG", "Registraton Country Code"),
@@ -51,7 +53,7 @@ pub(super) fn print_legend(weather: bool, angles: bool, speed: bool, extra: bool
                 w1 = width.1
             )
         })
-        .chain(if speed {
+        .chain(if display_flags.speed() {
             legend_speed
                 .iter()
                 .map(|&(header, description)| {
@@ -67,7 +69,7 @@ pub(super) fn print_legend(weather: bool, angles: bool, speed: bool, extra: bool
         } else {
             Vec::new()
         })
-        .chain(if angles {
+        .chain(if display_flags.angles() {
             legend_angles
                 .iter()
                 .map(|&(header, description)| {
@@ -83,7 +85,7 @@ pub(super) fn print_legend(weather: bool, angles: bool, speed: bool, extra: bool
         } else {
             Vec::new()
         })
-        .chain(if weather {
+        .chain(if display_flags.weather() {
             legend_weather
                 .iter()
                 .map(|&(header, description)| {
@@ -99,7 +101,7 @@ pub(super) fn print_legend(weather: bool, angles: bool, speed: bool, extra: bool
         } else {
             Vec::new()
         })
-        .chain(if extra {
+        .chain(if display_flags.extra() {
             legend_extra
                 .iter()
                 .map(|&(header, description)| {
