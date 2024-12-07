@@ -2,7 +2,7 @@ mod header;
 mod legend;
 mod planes;
 
-use header::print_header;
+use header::LegendHeaders;
 use legend::print_legend;
 use planes::{print_planes, DisplayFlags};
 
@@ -43,6 +43,8 @@ pub(super) fn read_lines<R: BufRead>(
         clear_screen();
         print_legend(&display_flags);
     }
+
+    let headers = LegendHeaders::from_display_flags(&display_flags);
 
     let mut df_count = BTreeMap::new();
     let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
@@ -126,9 +128,11 @@ pub(super) fn read_lines<R: BufRead>(
                             && !display_flags_vec.contains(&'Q')
                         {
                             clear_screen();
-                            print_header(&display_flags, true);
+
+                            headers.print_header();
+                            headers.print_separator();
                             print_planes(&planes, args, &display_flags);
-                            print_header(&display_flags, false);
+                            headers.print_separator();
 
                             if args.count_df {
                                 let result =
