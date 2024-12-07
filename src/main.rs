@@ -17,7 +17,7 @@ use std::time::Duration;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 #[clap(
-    version = "v0.3.0",
+    version = "v0.3.1",
     author = "Anton Sidorov tonysidrock@gmail.com",
     about = "ADS-B squitter decoder"
 )]
@@ -115,7 +115,7 @@ fn main() -> io::Result<()> {
     // Initialize the logger
     Builder::from_env(Env::default().default_filter_or("error"))
         .format(move |_, record| {
-            let mut error_log_file = error_log_file.lock().unwrap();
+            let mut error_log_file = error_log_file.lock().expect("Cannot initialise log file.");
             writeln!(error_log_file, "{} - {}", record.level(), record.args())
         })
         .init();
