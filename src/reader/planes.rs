@@ -7,7 +7,7 @@ use std::sync::{Arc, RwLock};
 pub(super) fn print_planes(
     planes: &Arc<RwLock<HashMap<u32, Plane>>>,
     args: &Args,
-    print_flags: &DisplayFlags,
+    display_flags: &DisplayFlags,
 ) {
     let planes = planes.read().unwrap();
     let mut planes_vector: Vec<(&u32, &Plane)> = planes.iter().collect();
@@ -70,7 +70,8 @@ pub(super) fn print_planes(
     print!(
         "{}",
         planes_vector.iter().fold(String::new(), |acc, (_, plane)| {
-            acc + &format!("{}\n", format_simple_display(*plane, print_flags))
+            acc + &format!("{}\n", format_simple_display(*plane, display_flags))
         })
-    )
+    );
+    Ok(())
 }
