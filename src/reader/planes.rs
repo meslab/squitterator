@@ -73,5 +73,4 @@ pub(super) fn print_planes(
             acc + &format!("{}\n", format_simple_display(*plane, display_flags))
         })
     );
-    Ok(())
 }
