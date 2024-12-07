@@ -4,7 +4,7 @@ mod planes;
 
 use header::print_header;
 use legend::print_legend;
-use planes::print_planes;
+use planes::{print_planes, DisplayFlags};
 
 use crate::Args;
 use squitterator::decoder::{self, df, icao, Downlink};
@@ -29,15 +29,23 @@ pub(super) fn read_lines<R: BufRead>(
         .as_ref()
         .map(|f| Mutex::new(File::create(f).expect("Unable to create downlink log file")));
 
-    let display_flags = args.display.concat().chars().collect::<Vec<char>>();
+    let display_flags_vec = args.display.concat().chars().collect::<Vec<char>>();
 
-    if !display_flags.contains(&'Q') {
+    let display_flags = DisplayFlags::new(
+        display_flags_vec.contains(&'w'),
+        display_flags_vec.contains(&'a'),
+        display_flags_vec.contains(&'s'),
+        display_flags_vec.contains(&'A'),
+        display_flags_vec.contains(&'e'),
+    );
+
+    if !display_flags_vec.contains(&'Q') {
         clear_screen();
         print_legend(
-            display_flags.contains(&'w'),
-            display_flags.contains(&'a'),
-            display_flags.contains(&'s'),
-            display_flags.contains(&'e'),
+            display_flags_vec.contains(&'w'),
+            display_flags_vec.contains(&'a'),
+            display_flags_vec.contains(&'s'),
+            display_flags_vec.contains(&'e'),
         );
     }
 
@@ -120,34 +128,12 @@ pub(super) fn read_lines<R: BufRead>(
                         }
 
                         if now.signed_duration_since(timestamp).num_seconds() > args.update
-                            && !display_flags.contains(&'Q')
+                            && !display_flags_vec.contains(&'Q')
                         {
                             clear_screen();
-                            print_header(
-                                display_flags.contains(&'w'),
-                                display_flags.contains(&'a'),
-                                display_flags.contains(&'s'),
-                                display_flags.contains(&'A'),
-                                display_flags.contains(&'e'),
-                                true,
-                            );
-                            print_planes(
-                                &planes,
-                                args,
-                                display_flags.contains(&'w'),
-                                display_flags.contains(&'a'),
-                                display_flags.contains(&'s'),
-                                display_flags.contains(&'A'),
-                                display_flags.contains(&'e'),
-                            );
-                            print_header(
-                                display_flags.contains(&'w'),
-                                display_flags.contains(&'a'),
-                                display_flags.contains(&'s'),
-                                display_flags.contains(&'A'),
-                                display_flags.contains(&'e'),
-                                false,
-                            );
+                            print_header(&display_flags, true);
+                            print_planes(&planes, args, &display_flags);
+                            print_header(&display_flags, false);
 
                             if args.count_df {
                                 let result =

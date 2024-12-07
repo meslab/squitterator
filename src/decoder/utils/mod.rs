@@ -22,25 +22,24 @@ use log::{debug, warn};
 ///
 /// * `Option<Vec<u32>>` - An Option vector of u32 values representing the converted squitter string.
 pub fn message(squitter: &str) -> Option<Vec<u32>> {
-    match clean_squitter(squitter) {
-        Some(cleaned_squitter) => match cleaned_squitter.len() {
-            14 | 28 => {
-                let message = cleaned_squitter
-                    .chars()
-                    .map(|c| u32::from_str_radix(&c.to_string(), 16).unwrap())
-                    .collect::<Vec<u32>>();
-                debug!("Message: {:?}", message);
-                let r = reminder(&message);
-                match r {
-                    0 => Some(message),
-                    _ => {
-                        warn!("{}, R:{}", cleaned_squitter, r);
-                        None
-                    }
+    let cleaned_squitter = clean_squitter(squitter)?;
+    match cleaned_squitter.len() {
+        14 | 28 => {
+            let message = cleaned_squitter
+                .chars()
+                .filter_map(|c| u32::from_str_radix(&c.to_string(), 16).ok())
+                .collect::<Vec<u32>>();
+
+            debug!("Message: {:?}", message);
+
+            match reminder(&message) {
+                0 => Some(message),
+                r => {
+                    warn!("{}, R:{}", cleaned_squitter, r);
+                    None
                 }
             }
-            _ => None,
-        },
+        }
         _ => None,
     }
 }

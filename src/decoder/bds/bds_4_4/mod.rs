@@ -67,7 +67,7 @@ pub fn is_bds_4_4(message: &[u32]) -> Option<Meteo> {
             decoder::range_value(message, 33, 36)?,
             meteo
         );
-        
+
         if meteo.temp.is_some()
             // && meteo.wind.is_some()
             && meteo.humidity.is_some()
