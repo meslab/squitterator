@@ -82,7 +82,7 @@ pub struct DisplayFlags {
 }
 
 impl DisplayFlags {
-    pub fn from_str(arg_str: &str) -> Self {
+    pub fn from_arg_str(arg_str: &str) -> Self {
         let display_flags_vec = arg_str.chars().collect::<Vec<char>>();
         DisplayFlags::from_booleans(
             display_flags_vec.contains(&'w'),
