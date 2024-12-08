@@ -1,23 +1,24 @@
 mod planes;
 
-use planes::print_planes;
-use squitterator::decoder::header::{DisplayFlags, LegendHeaders};
-use squitterator::decoder::legend::Legend;
-
 use crate::Args;
-use decoder::UpdateFromDownlink;
-use squitterator::decoder::{self, df, icao, Downlink};
-use squitterator::decoder::{message, Plane};
-use std::net::TcpStream;
-use std::sync::{Arc, RwLock};
-
 use log::{debug, error, info, warn};
-use std::collections::{BTreeMap, HashMap};
-use std::fs::File;
-use std::io::{BufRead, BufReader, Result, Write};
-use std::sync::Mutex;
-use std::thread::{self, sleep};
-use std::time::Duration;
+use planes::print_planes;
+use squitterator::decoder::{
+    df,
+    header::{DisplayFlags, LegendHeaders},
+    icao,
+    legend::Legend,
+    message, Downlink, Plane, UpdateFromDownlink, DF,
+};
+use std::{
+    collections::{BTreeMap, HashMap},
+    fs::File,
+    io::{BufRead, BufReader, Result, Write},
+    net::TcpStream,
+    sync::{Arc, Mutex, RwLock},
+    thread::{self, sleep},
+    time::Duration,
+};
 
 fn read_lines<R: BufRead>(
     reader: R,
@@ -29,17 +30,9 @@ fn read_lines<R: BufRead>(
         .as_ref()
         .map(|f| Mutex::new(File::create(f).expect("Unable to create downlink log file")));
 
-    let display_flags_vec = args.display.concat().chars().collect::<Vec<char>>();
+    let display_flags = DisplayFlags::from_arg_str(&args.display.concat());
 
-    let display_flags = DisplayFlags::new(
-        display_flags_vec.contains(&'w'),
-        display_flags_vec.contains(&'a'),
-        display_flags_vec.contains(&'s'),
-        display_flags_vec.contains(&'A'),
-        display_flags_vec.contains(&'e'),
-    );
-
-    if !display_flags_vec.contains(&'Q') {
+    if !display_flags.quiet() {
         clear_screen();
 
         let legend = Legend::from_display_flags(&display_flags);
@@ -82,7 +75,7 @@ fn read_lines<R: BufRead>(
 
                     if let Some(icao) = icao(&message, df) {
                         let now = chrono::Utc::now();
-                        if let Ok(downlink) = decoder::DF::from_message(&message) {
+                        if let Ok(downlink) = DF::from_message(&message) {
                             if let Ok(mut planes) = planes.write() {
                                 planes
                                     .entry(icao)
@@ -119,7 +112,7 @@ fn read_lines<R: BufRead>(
                         }
 
                         if let Some(ref dlf) = downlink_error_log_file {
-                            if let Ok(downlink) = decoder::DF::from_message(&message) {
+                            if let Ok(downlink) = DF::from_message(&message) {
                                 let mut dlf =
                                     dlf.lock().expect("Cannot open downlink error log file.");
                                 write!(dlf, "{}", downlink)?;
@@ -128,7 +121,7 @@ fn read_lines<R: BufRead>(
                         }
 
                         if now.signed_duration_since(timestamp).num_seconds() > args.update
-                            && !display_flags_vec.contains(&'Q')
+                            && !display_flags.quiet()
                         {
                             clear_screen();
 
