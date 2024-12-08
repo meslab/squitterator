@@ -1,18 +1,15 @@
 mod reader;
-use reader::read_lines;
+use reader::spawn_reader_thread;
 use squitterator::decoder::{self, Plane};
 
 use crate::decoder::Coordinates;
 use clap::Parser;
 use env_logger::{Builder, Env};
-use log::{error, info};
+use log::error;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{self, BufReader, Write};
-use std::net::TcpStream;
+use std::io::{self, Write};
 use std::sync::{Arc, Mutex, RwLock};
-use std::thread::{self, sleep};
-use std::time::Duration;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -109,52 +106,35 @@ fn main() -> io::Result<()> {
 
     decoder::set_observer_coords(coords);
 
-    // Initialize the logger
-    if let Some(error_log_file) = match args.error_log.as_str() {
-        "/dev/null" => None,
-        _ => File::create(&args.error_log).ok(),
-    } {
-        let error_log_file = Mutex::new(error_log_file);
+    initialize_logger(&args.error_log);
 
-        Builder::from_env(Env::default().default_filter_or("error"))
-            .format(move |_, record| {
-                let mut error_log_file =
-                    error_log_file.lock().expect("Cannot initialise log file.");
-                writeln!(error_log_file, "{} - {}", record.level(), record.args())
-            })
-            .init();
-    };
-    
-    let reader_thread = {
-        let planes = planes.clone();
-        thread::spawn(move || match !args.tcp.is_empty() {
-            true => loop {
-                let stream = match TcpStream::connect(&args.tcp) {
-                    Ok(stream) => {
-                        info!("Successfully connected to the server {}", &args.tcp);
-                        stream
-                    }
-                    Err(e) => {
-                        error!("Failed to connect: {}", e);
-                        continue;
-                    }
-                };
-                let reader = BufReader::new(stream);
-                if let Err(e) = read_lines(reader, &args, planes.clone()) {
-                    error!("Error during reading: {}", e);
-                    sleep(Duration::from_secs(5));
-                    continue;
-                }
-            },
-            _ => {
-                let file = File::open(&args.source)?;
-                let reader = BufReader::new(file);
-                read_lines(reader, &args, planes.clone())
-            }
-        })
-    };
-
+    let reader_thread = spawn_reader_thread(Arc::new(args), planes);
     reader_thread
         .join()
         .expect("Couldn't join on the associated thread")
+}
+
+fn initialize_logger(error_log_path: &str) {
+    if error_log_path == "/dev/null" {
+        return;
+    }
+
+    let file = match File::create(error_log_path) {
+        Ok(file) => file,
+        Err(e) => {
+            eprintln!("Failed to create log file '{}': {}", error_log_path, e);
+            return;
+        }
+    };
+
+    let error_log_file = Mutex::new(file);
+
+    Builder::from_env(Env::default().default_filter_or("error"))
+        .format(move |_, record| {
+            let mut file = error_log_file
+                .lock()
+                .expect("Failed to acquire log file lock.");
+            writeln!(file, "{} - {}", record.level(), record.args())
+        })
+        .init();
 }
