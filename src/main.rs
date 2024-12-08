@@ -1,9 +1,8 @@
-use squitterator::reader::spawn_reader_thread;
-
 use squitterator::{
     arguments::Args,
     decoder::{set_observer_coords_from_str, Plane},
     logger::initialize_logger,
+    reader::spawn_reader_thread,
 };
 
 use clap::Parser;
