@@ -1,4 +1,5 @@
 use lazy_static::lazy_static;
+use log::error;
 use std::str::FromStr;
 use std::sync::Mutex;
 
@@ -37,11 +38,20 @@ lazy_static! {
 }
 
 // Function to set the observer's coordinates
-pub fn set_observer_coords(c: Option<(f64, f64)>) {
+fn set_observer_coords(c: Option<(f64, f64)>) {
     let mut coords = OBSERVER_COORDS
         .lock()
         .expect("Cannot set observer's coordinates.");
     *coords = c;
+}
+
+pub fn set_observer_coords_from_str(coord_str: &str) {
+    match coord_str.parse::<Coordinates>() {
+        Ok(coords) => set_observer_coords(Some((coords.lat, coords.lon))),
+        Err(e) => {
+            error!("Error parsing coordinates: {}", e);
+        }
+    }
 }
 
 // Function to get the observer's coordinates

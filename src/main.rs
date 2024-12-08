@@ -1,11 +1,9 @@
 mod reader;
 use reader::spawn_reader_thread;
-use squitterator::decoder::{self, Plane};
+use squitterator::decoder::{set_observer_coords_from_str, Plane};
 
-use crate::decoder::Coordinates;
 use clap::Parser;
 use env_logger::{Builder, Env};
-use log::error;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, Write};
@@ -92,19 +90,9 @@ fn main() -> io::Result<()> {
 
     let planes: Arc<RwLock<HashMap<u32, Plane>>> = Arc::new(RwLock::new(HashMap::new()));
 
-    let coords = if let Some(coord_str) = &args.observer_coord {
-        match coord_str.parse::<Coordinates>() {
-            Ok(coords) => Some((coords.lat, coords.lon)),
-            Err(e) => {
-                error!("Error parsing coordinates: {}", e);
-                None
-            }
-        }
-    } else {
-        None
+    if let Some(coord_str) = &args.observer_coord {
+        set_observer_coords_from_str(coord_str)
     };
-
-    decoder::set_observer_coords(coords);
 
     initialize_logger(&args.error_log);
 
