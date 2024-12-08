@@ -1,6 +1,6 @@
-use squitterator::arguments::Args;
-use squitterator::decoder::header::DisplayFlags;
-use squitterator::decoder::{format_simple_display, Plane};
+use crate::arguments::Args;
+use crate::decoder::header::DisplayFlags;
+use crate::decoder::{format_simple_display, Plane};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 

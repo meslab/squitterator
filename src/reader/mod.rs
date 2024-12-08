@@ -1,15 +1,15 @@
-mod planes;
+pub mod planes;
 
-use log::{debug, error, info, warn};
-use planes::print_planes;
-use squitterator::arguments::Args;
-use squitterator::decoder::{
+use crate::arguments::Args;
+use crate::decoder::{
     df,
     header::{DisplayFlags, LegendHeaders},
     icao,
     legend::Legend,
     message, Downlink, Plane, UpdateFromDownlink, DF,
 };
+use log::{debug, error, info, warn};
+use planes::print_planes;
 use std::{
     collections::{BTreeMap, HashMap},
     fs::File,
