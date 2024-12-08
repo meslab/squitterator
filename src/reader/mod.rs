@@ -1,12 +1,14 @@
 pub mod planes;
 
-use crate::arguments::Args;
-use crate::decoder::{
-    df,
-    header::{DisplayFlags, LegendHeaders},
-    icao,
-    legend::Legend,
-    message, Downlink, Plane, UpdateFromDownlink, DF,
+use crate::{
+    arguments::Args,
+    decoder::{
+        df,
+        header::{DisplayFlags, LegendHeaders},
+        icao,
+        legend::Legend,
+        message, Downlink, Plane, UpdateFromDownlink, DF,
+    },
 };
 use log::{debug, error, info, warn};
 use planes::print_planes;
