@@ -1,4 +1,4 @@
-use crate::Args;
+use squitterator::arguments::Args;
 use squitterator::decoder::header::DisplayFlags;
 use squitterator::decoder::{format_simple_display, Plane};
 use std::collections::HashMap;

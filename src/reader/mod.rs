@@ -1,8 +1,8 @@
 mod planes;
 
-use crate::Args;
 use log::{debug, error, info, warn};
 use planes::print_planes;
+use squitterator::arguments::Args;
 use squitterator::decoder::{
     df,
     header::{DisplayFlags, LegendHeaders},
