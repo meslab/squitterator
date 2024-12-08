@@ -45,19 +45,19 @@ fn set_observer_coords(c: Option<(f64, f64)>) {
     *coords = c;
 }
 
+// Function to set the observer's coordinates from an argument string
 pub fn set_observer_coords_from_str(coord_str: &str) {
-    match coord_str.parse::<Coordinates>() {
-        Ok(coords) => set_observer_coords(Some((coords.lat, coords.lon))),
-        Err(e) => {
-            error!("Error parsing coordinates: {}", e);
-        }
+    if let Err(e) = coord_str
+        .parse::<Coordinates>()
+        .map(|coords| set_observer_coords(Some((coords.lat, coords.lon))))
+    {
+        error!("Error parsing coordinates: {}", e);
     }
 }
 
 // Function to get the observer's coordinates
 pub(crate) fn get_observer_coords() -> Option<(f64, f64)> {
-    let coords = OBSERVER_COORDS
+    *OBSERVER_COORDS
         .lock()
-        .expect("Cannot get observer's coordinates.");
-    *coords
+        .expect("Failed to lock observer coordinates")
 }
