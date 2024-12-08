@@ -82,7 +82,26 @@ pub struct DisplayFlags {
 }
 
 impl DisplayFlags {
-    pub fn new(weather: bool, angles: bool, speed: bool, altitude: bool, extra: bool) -> Self {
+    pub fn from_str(arg_str: &str) -> Self {
+        let display_flags_vec = arg_str.chars().collect::<Vec<char>>();
+        DisplayFlags::from_booleans(
+            display_flags_vec.contains(&'w'),
+            display_flags_vec.contains(&'a'),
+            display_flags_vec.contains(&'s'),
+            display_flags_vec.contains(&'A'),
+            display_flags_vec.contains(&'e'),
+            display_flags_vec.contains(&'Q'),
+        )
+    }
+
+    fn from_booleans(
+        weather: bool,
+        angles: bool,
+        speed: bool,
+        altitude: bool,
+        extra: bool,
+        quiet: bool,
+    ) -> Self {
         let mut bits = 0u8;
         if weather {
             bits |= 1 << 0;
@@ -98,6 +117,9 @@ impl DisplayFlags {
         }
         if extra {
             bits |= 1 << 4;
+        }
+        if quiet {
+            bits |= 1 << 5;
         }
         DisplayFlags { bits }
     }
@@ -117,6 +139,9 @@ impl DisplayFlags {
     pub fn extra(&self) -> bool {
         self.bits & (1 << 4) != 0
     }
+    pub fn quiet(&self) -> bool {
+        self.bits & (1 << 5) != 0
+    }
 }
 
 #[cfg(test)]
@@ -125,7 +150,7 @@ mod tests {
 
     #[test]
     fn test_base() {
-        let display_flags = DisplayFlags::new(false, false, false, false, false);
+        let display_flags = DisplayFlags::from_booleans(false, false, false, false, false, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -135,7 +160,7 @@ mod tests {
 
     #[test]
     fn test_weather_0() {
-        let display_flags = DisplayFlags::new(true, false, false, false, false);
+        let display_flags = DisplayFlags::from_booleans(true, false, false, false, false, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -145,7 +170,7 @@ mod tests {
 
     #[test]
     fn test_weather_1() {
-        let display_flags = DisplayFlags::new(true, true, false, false, false);
+        let display_flags = DisplayFlags::from_booleans(true, true, false, false, false, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -155,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_weather_2() {
-        let display_flags = DisplayFlags::new(true, true, true, false, false);
+        let display_flags = DisplayFlags::from_booleans(true, true, true, false, false, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -165,7 +190,7 @@ mod tests {
 
     #[test]
     fn test_weather_3() {
-        let display_flags = DisplayFlags::new(true, true, true, true, false);
+        let display_flags = DisplayFlags::from_booleans(true, true, true, true, false, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -175,7 +200,7 @@ mod tests {
 
     #[test]
     fn test_weather_4() {
-        let display_flags = DisplayFlags::new(true, true, true, true, true);
+        let display_flags = DisplayFlags::from_booleans(true, true, true, true, true, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -185,7 +210,7 @@ mod tests {
 
     #[test]
     fn test_angles_0() {
-        let display_flags = DisplayFlags::new(false, true, false, false, false);
+        let display_flags = DisplayFlags::from_booleans(false, true, false, false, false, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -195,7 +220,7 @@ mod tests {
 
     #[test]
     fn test_angles_1() {
-        let display_flags = DisplayFlags::new(false, true, true, false, false);
+        let display_flags = DisplayFlags::from_booleans(false, true, true, false, false, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -205,7 +230,7 @@ mod tests {
 
     #[test]
     fn test_angles_2() {
-        let display_flags = DisplayFlags::new(false, true, true, true, false);
+        let display_flags = DisplayFlags::from_booleans(false, true, true, true, false, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -215,7 +240,7 @@ mod tests {
 
     #[test]
     fn test_angles_3() {
-        let display_flags = DisplayFlags::new(false, true, true, true, true);
+        let display_flags = DisplayFlags::from_booleans(false, true, true, true, true, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -225,7 +250,7 @@ mod tests {
 
     #[test]
     fn test_speed_0() {
-        let display_flags = DisplayFlags::new(false, false, true, false, false);
+        let display_flags = DisplayFlags::from_booleans(false, false, true, false, false, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -235,7 +260,7 @@ mod tests {
 
     #[test]
     fn test_speed_1() {
-        let display_flags = DisplayFlags::new(false, false, true, true, false);
+        let display_flags = DisplayFlags::from_booleans(false, false, true, true, false, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -245,7 +270,7 @@ mod tests {
 
     #[test]
     fn test_speed_2() {
-        let display_flags = DisplayFlags::new(false, false, true, true, true);
+        let display_flags = DisplayFlags::from_booleans(false, false, true, true, true, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -255,7 +280,7 @@ mod tests {
 
     #[test]
     fn test_altitude_0() {
-        let display_flags = DisplayFlags::new(false, false, false, true, false);
+        let display_flags = DisplayFlags::from_booleans(false, false, false, true, false, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -265,7 +290,7 @@ mod tests {
 
     #[test]
     fn test_altitude_1() {
-        let display_flags = DisplayFlags::new(false, false, false, true, true);
+        let display_flags = DisplayFlags::from_booleans(false, false, false, true, true, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
@@ -275,7 +300,7 @@ mod tests {
 
     #[test]
     fn test_extra_0() {
-        let display_flags = DisplayFlags::new(false, false, false, false, true);
+        let display_flags = DisplayFlags::from_booleans(false, false, false, false, true, false);
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,

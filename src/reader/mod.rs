@@ -29,17 +29,9 @@ fn read_lines<R: BufRead>(
         .as_ref()
         .map(|f| Mutex::new(File::create(f).expect("Unable to create downlink log file")));
 
-    let display_flags_vec = args.display.concat().chars().collect::<Vec<char>>();
+    let display_flags = DisplayFlags::from_str(&args.display.concat());
 
-    let display_flags = DisplayFlags::new(
-        display_flags_vec.contains(&'w'),
-        display_flags_vec.contains(&'a'),
-        display_flags_vec.contains(&'s'),
-        display_flags_vec.contains(&'A'),
-        display_flags_vec.contains(&'e'),
-    );
-
-    if !display_flags_vec.contains(&'Q') {
+    if !display_flags.quiet() {
         clear_screen();
 
         let legend = Legend::from_display_flags(&display_flags);
@@ -128,7 +120,7 @@ fn read_lines<R: BufRead>(
                         }
 
                         if now.signed_duration_since(timestamp).num_seconds() > args.update
-                            && !display_flags_vec.contains(&'Q')
+                            && !display_flags.quiet()
                         {
                             clear_screen();
 
