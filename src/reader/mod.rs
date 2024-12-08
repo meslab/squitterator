@@ -2,24 +2,27 @@ mod planes;
 
 use planes::print_planes;
 use squitterator::decoder::header::{DisplayFlags, LegendHeaders};
-use squitterator::decoder::legend::print_legend;
+use squitterator::decoder::legend::Legend;
 
 use crate::Args;
 use decoder::UpdateFromDownlink;
 use squitterator::decoder::{self, df, icao, Downlink};
 use squitterator::decoder::{message, Plane};
+use std::net::TcpStream;
 use std::sync::{Arc, RwLock};
 
-use log::{debug, error, warn};
+use log::{debug, error, info, warn};
 use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
-use std::io::{BufRead, Result, Write};
+use std::io::{BufRead, BufReader, Result, Write};
 use std::sync::Mutex;
+use std::thread::{self, sleep};
+use std::time::Duration;
 
-pub(super) fn read_lines<R: BufRead>(
+fn read_lines<R: BufRead>(
     reader: R,
     args: &Args,
-    planes: Arc<RwLock<HashMap<u32, Plane>>>,
+    planes: &Arc<RwLock<HashMap<u32, Plane>>>,
 ) -> Result<()> {
     let downlink_error_log_file = args
         .downlink_log
@@ -38,7 +41,9 @@ pub(super) fn read_lines<R: BufRead>(
 
     if !display_flags_vec.contains(&'Q') {
         clear_screen();
-        print_legend(&display_flags);
+
+        let legend = Legend::from_display_flags(&display_flags);
+        legend.print_legend();
     }
 
     let headers = LegendHeaders::from_display_flags(&display_flags);
@@ -90,7 +95,7 @@ pub(super) fn read_lines<R: BufRead>(
                                     })
                                     .or_insert(Plane::from_downlink(&downlink, icao));
 
-                                if cleanup_count > 100 {
+                                if cleanup_count > 10 {
                                     planes.retain(|_, plane| {
                                         let elapsed = now
                                             .signed_duration_since(plane.timestamp)
@@ -129,7 +134,7 @@ pub(super) fn read_lines<R: BufRead>(
 
                             headers.print_header();
                             headers.print_separator();
-                            print_planes(&planes, args, &display_flags);
+                            print_planes(planes, args, &display_flags);
                             headers.print_separator();
 
                             if args.count_df {
@@ -149,6 +154,44 @@ pub(super) fn read_lines<R: BufRead>(
         }
     }
     Ok(())
+}
+
+pub fn spawn_reader_thread(
+    args: Arc<Args>,
+    planes: Arc<RwLock<HashMap<u32, Plane>>>,
+) -> thread::JoinHandle<Result<()>> {
+    thread::spawn(move || {
+        if !args.tcp.is_empty() {
+            connect_and_read_tcp(args, &planes)
+        } else {
+            read_from_file(args, &planes)
+        }
+    })
+}
+
+fn connect_and_read_tcp(args: Arc<Args>, planes: &Arc<RwLock<HashMap<u32, Plane>>>) -> Result<()> {
+    loop {
+        match TcpStream::connect(&args.tcp) {
+            Ok(stream) => {
+                info!("Successfully connected to the server {}", &args.tcp);
+                let reader = BufReader::new(stream);
+                if let Err(e) = read_lines(reader, &args, planes) {
+                    error!("Error during reading: {}", e);
+                    sleep(Duration::from_secs(5));
+                }
+            }
+            Err(e) => {
+                error!("Failed to connect to {}: {}", &args.tcp, e);
+                sleep(Duration::from_secs(5));
+            }
+        }
+    }
+}
+
+fn read_from_file(args: Arc<Args>, planes: &Arc<RwLock<HashMap<u32, Plane>>>) -> Result<()> {
+    let file = File::open(&args.source)?;
+    let reader = BufReader::new(file);
+    read_lines(reader, &args, planes)
 }
 
 fn clear_screen() {
