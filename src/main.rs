@@ -36,7 +36,7 @@ struct Args {
     #[clap(short = 'D', long, default_value = None)]
     downlink_log: Option<String>,
 
-    #[clap(short = 'l', long, default_value = "sq.errors.log")]
+    #[clap(short = 'l', long, default_value = "/dev/null")]
     error_log: String,
 
     #[clap(short, long, default_value = None, help = "Process only specific DF messages\n -f 21 -f 4 - DF4 and DF21,\n -f 21 - only DF21, etc")]
@@ -93,9 +93,6 @@ struct Args {
 fn main() -> io::Result<()> {
     let args = Args::parse();
 
-    let error_log_file = File::create(&args.error_log).expect("Unable to create log file");
-    let error_log_file = Mutex::new(error_log_file);
-
     let planes: Arc<RwLock<HashMap<u32, Plane>>> = Arc::new(RwLock::new(HashMap::new()));
 
     let coords = if let Some(coord_str) = &args.observer_coord {
@@ -113,13 +110,21 @@ fn main() -> io::Result<()> {
     decoder::set_observer_coords(coords);
 
     // Initialize the logger
-    Builder::from_env(Env::default().default_filter_or("error"))
-        .format(move |_, record| {
-            let mut error_log_file = error_log_file.lock().expect("Cannot initialise log file.");
-            writeln!(error_log_file, "{} - {}", record.level(), record.args())
-        })
-        .init();
+    if let Some(error_log_file) = match args.error_log.as_str() {
+        "/dev/null" => None,
+        _ => File::create(&args.error_log).ok(),
+    } {
+        let error_log_file = Mutex::new(error_log_file);
 
+        Builder::from_env(Env::default().default_filter_or("error"))
+            .format(move |_, record| {
+                let mut error_log_file =
+                    error_log_file.lock().expect("Cannot initialise log file.");
+                writeln!(error_log_file, "{} - {}", record.level(), record.args())
+            })
+            .init();
+    };
+    
     let reader_thread = {
         let planes = planes.clone();
         thread::spawn(move || match !args.tcp.is_empty() {
