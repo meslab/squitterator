@@ -88,13 +88,13 @@ struct Args {
 fn main() -> io::Result<()> {
     let args = Args::parse();
 
-    let planes: Arc<RwLock<HashMap<u32, Plane>>> = Arc::new(RwLock::new(HashMap::new()));
-
     if let Some(coord_str) = &args.observer_coord {
         set_observer_coords_from_str(coord_str)
     };
 
     initialize_logger(&args.error_log);
+
+    let planes: Arc<RwLock<HashMap<u32, Plane>>> = Arc::new(RwLock::new(HashMap::new()));
 
     let reader_thread = spawn_reader_thread(Arc::new(args), planes);
     reader_thread
