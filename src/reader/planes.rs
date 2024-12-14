@@ -1,10 +1,9 @@
 use crate::arguments::Args;
-use crate::decoder::header::DisplayFlags;
-use crate::decoder::{format_simple_display, Plane};
+use crate::decoder::{format_simple_display, DisplayFlags, Plane};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
-pub(super) fn print_planes(
+pub fn print_planes(
     planes: &Arc<RwLock<HashMap<u32, Plane>>>,
     args: &Args,
     display_flags: &DisplayFlags,

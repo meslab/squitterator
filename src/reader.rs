@@ -1,17 +1,15 @@
-pub mod planes;
+mod planes;
+
+pub use planes::print_planes;
 
 use crate::{
     arguments::Args,
     decoder::{
-        df,
-        header::{DisplayFlags, LegendHeaders},
-        icao,
-        legend::Legend,
-        message, Downlink, Plane, UpdateFromDownlink, DF,
+        df, icao, message, DisplayFlags, Downlink, Legend, LegendHeaders, Plane,
+        UpdateFromDownlink, DF,
     },
 };
 use log::{debug, error, info, warn};
-use planes::print_planes;
 use std::{
     collections::{BTreeMap, HashMap},
     fs::File,
