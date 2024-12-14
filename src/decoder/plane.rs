@@ -8,8 +8,6 @@ mod update_position;
 
 pub use from_downlink::UpdateFromDownlink;
 pub use simple_display::format_simple_display;
-pub use header::*;
-pub use legend::*;
 
 use crate::decoder::Capability;
 use chrono::{DateTime, Utc};
