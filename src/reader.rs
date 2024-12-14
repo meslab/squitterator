@@ -5,8 +5,7 @@ use crate::{
     decoder::{
         df, icao, message,
         plane::{
-            header::{DisplayFlags, LegendHeaders},
-            legend::Legend,
+            Legend, {DisplayFlags, LegendHeaders},
         },
         Downlink, Plane, UpdateFromDownlink, DF,
     },

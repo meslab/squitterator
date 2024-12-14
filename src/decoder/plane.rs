@@ -1,12 +1,13 @@
-pub mod header;
-pub mod legend;
-
 mod from_downlink;
 mod from_squitter;
+mod header;
+mod legend;
 mod simple_display;
 mod update_position;
 
 pub use from_downlink::UpdateFromDownlink;
+pub use header::{DisplayFlags, LegendHeaders};
+pub use legend::Legend;
 pub use simple_display::format_simple_display;
 
 use crate::decoder::Capability;

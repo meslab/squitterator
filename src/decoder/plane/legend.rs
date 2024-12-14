@@ -1,4 +1,4 @@
-use super::header::DisplayFlags;
+use super::DisplayFlags;
 
 pub struct Legend {
     pub value: String,
