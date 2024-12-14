@@ -1,4 +1,4 @@
-pub mod planes;
+mod planes;
 
 use crate::{
     arguments::Args,
@@ -11,7 +11,7 @@ use crate::{
     },
 };
 use log::{debug, error, info, warn};
-use planes::print_planes;
+pub use planes::print_planes;
 use std::{
     collections::{BTreeMap, HashMap},
     fs::File,
