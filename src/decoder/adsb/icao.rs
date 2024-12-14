@@ -14,7 +14,7 @@ use crate::decoder::get_crc;
 /// # Examples
 ///
 /// ```
-/// use squitterator::decoder::{message, df, icao};
+/// use squitterator::{message, df, icao};
 /// if let Some(message) = message("A0001838300000000000007ADA59") {
 ///     if let Some(df) = df(&message) {
 ///         if let Some(icao_address) = icao(&message, df) {

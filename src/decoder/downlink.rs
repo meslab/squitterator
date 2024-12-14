@@ -22,7 +22,7 @@ use crate::decoder::range_value;
 /// # Examples
 ///
 /// ```
-/// use squitterator::decoder::{message, df};
+/// use squitterator::{message, df};
 /// let squitter = "8D40621D58C382D690C8AC2863A7";
 /// if let Some(message) = message(squitter) {
 ///     if let Some(df) = df(&message) {

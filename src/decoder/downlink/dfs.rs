@@ -20,12 +20,6 @@ impl<T: Downlink + Display> Display for DownlinkFrame<T> {
     }
 }
 
-impl<T: Downlink> DownlinkFrame<T> {
-    pub fn new(downlink: T) -> Self {
-        Self { downlink }
-    }
-}
-
 impl Display for DF {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
