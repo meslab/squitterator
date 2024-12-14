@@ -5,7 +5,7 @@ mod downlink;
 mod ehs;
 mod meteo;
 mod observer;
-mod plane;
+pub mod plane;
 mod utils;
 
 pub use adsb::*;

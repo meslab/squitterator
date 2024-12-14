@@ -3,11 +3,12 @@ mod planes;
 use crate::{
     arguments::Args,
     decoder::{
-        df,
-        header::{DisplayFlags, LegendHeaders},
-        icao,
-        legend::Legend,
-        message, Downlink, Plane, UpdateFromDownlink, DF,
+        df, icao, message,
+        plane::{
+            header::{DisplayFlags, LegendHeaders},
+            legend::Legend,
+        },
+        Downlink, Plane, UpdateFromDownlink, DF,
     },
 };
 use log::{debug, error, info, warn};
