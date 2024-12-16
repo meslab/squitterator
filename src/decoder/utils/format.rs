@@ -11,11 +11,7 @@ use log::warn;
 /// * `Option<Vec<u32>>` - A cleaned squitter
 ///
 pub(crate) fn clean_squitter(line: &str) -> Option<Vec<u32>> {
-    let trimmed_line: Vec<u32> = line
-        .chars()
-        .filter(|c| c.is_ascii_hexdigit())
-        .map(|c| c.to_digit(16).unwrap())
-        .collect();
+    let trimmed_line: Vec<u32> = line.chars().filter_map(|c| c.to_digit(16)).collect();
     match trimmed_line.len() {
         14 | 28 => Some(trimmed_line),
         26 | 40 => Some(trimmed_line[12..].to_vec()),
