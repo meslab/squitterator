@@ -22,18 +22,13 @@ use log::debug;
 ///
 /// * `Option<Vec<u32>>` - An Option vector of u32 values representing the converted squitter string.
 pub fn message(squitter: &str) -> Option<Vec<u32>> {
-    let message = clean_squitter(squitter)?;
-    match message.len() {
-        14 | 28 => {
+    clean_squitter(squitter)
+        .filter(|message| matches!(message.len(), 14 | 28))
+        .filter(|message| reminder(message) == 0)
+        .map(|message| {
             debug!("Message: {:?}", message);
-
-            match reminder(&message) {
-                0 => Some(message),
-                _ => None,
-            }
-        }
-        _ => None,
-    }
+            message
+        })
 }
 
 pub(crate) fn hex_message(message: &[u32]) -> String {
