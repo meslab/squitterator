@@ -10,7 +10,7 @@ pub(crate) use format::*;
 pub(crate) use ma_code::*;
 pub(crate) use me_code::*;
 
-use log::{debug, warn};
+use log::debug;
 
 /// Converts a squitter string into a vector of u32 values.
 ///
@@ -22,22 +22,14 @@ use log::{debug, warn};
 ///
 /// * `Option<Vec<u32>>` - An Option vector of u32 values representing the converted squitter string.
 pub fn message(squitter: &str) -> Option<Vec<u32>> {
-    let cleaned_squitter = clean_squitter(squitter)?;
-    match cleaned_squitter.len() {
+    let message = clean_squitter(squitter)?;
+    match message.len() {
         14 | 28 => {
-            let message = cleaned_squitter
-                .chars()
-                .filter_map(|c| u32::from_str_radix(&c.to_string(), 16).ok())
-                .collect::<Vec<u32>>();
-
             debug!("Message: {:?}", message);
 
             match reminder(&message) {
                 0 => Some(message),
-                r => {
-                    warn!("{}, R:{}", cleaned_squitter, r);
-                    None
-                }
+                _ => None,
             }
         }
         _ => None,
