@@ -13,8 +13,30 @@ pub use simple_display::format_simple_display;
 use crate::decoder::Capability;
 use chrono::{DateTime, Utc};
 use std::fmt::{self, Display};
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+};
 
 use super::DF;
+
+pub struct Planes {
+    pub aircrafts: Arc<RwLock<HashMap<u32, Plane>>>,
+}
+
+impl Planes {
+    pub fn new() -> Self {
+        Planes {
+            aircrafts: Arc::new(RwLock::new(HashMap::new())),
+        }
+    }
+}
+
+impl Default for Planes {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 pub struct Plane {
     pub icao: u32,

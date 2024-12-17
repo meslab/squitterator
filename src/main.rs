@@ -1,15 +1,11 @@
 use squitterator::{
-    initialize_logger, set_observer_coords_from_str, spawn_reader_thread, Args, Plane,
+    initialize_logger, set_observer_coords_from_str, spawn_reader_thread, Args, Planes,
 };
 
 use clap::Parser;
-use std::{
-    collections::HashMap,
-    io,
-    sync::{Arc, RwLock},
-};
+use std::{io::Result, sync::Arc};
 
-fn main() -> io::Result<()> {
+fn main() -> Result<()> {
     let args = Args::parse();
 
     initialize_logger(&args.error_log);
@@ -18,9 +14,9 @@ fn main() -> io::Result<()> {
         set_observer_coords_from_str(coord_str)
     };
 
-    let planes: Arc<RwLock<HashMap<u32, Plane>>> = Arc::new(RwLock::new(HashMap::new()));
+    let planes = Planes::new();
 
-    let reader_thread = spawn_reader_thread(Arc::new(args), planes);
+    let reader_thread = spawn_reader_thread(Arc::new(args), planes.aircrafts);
     reader_thread
         .join()
         .expect("Couldn't join on the associated thread")

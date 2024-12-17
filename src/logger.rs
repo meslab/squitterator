@@ -3,7 +3,7 @@ use std::{fs::File, io::Write, sync::Mutex};
 
 pub fn initialize_logger(error_log_path: &Option<String>) {
     if let Some(error_log_path) = error_log_path {
-        let file = match File::create(&error_log_path) {
+        let file = match File::create(error_log_path) {
             Ok(file) => file,
             Err(e) => {
                 eprintln!("Failed to create log file '{}': {}", error_log_path, e);
