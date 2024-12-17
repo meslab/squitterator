@@ -18,15 +18,15 @@ use std::{
     time::Duration,
 };
 
-struct AppState {
+struct AppCounters {
     df_count: BTreeMap<u32, i32>,
     timestamp: DateTime<Utc>,
     cleanup_count: u32,
 }
 
-impl AppState {
+impl AppCounters {
     fn from_update(update: i64) -> Self {
-        AppState {
+        AppCounters {
             df_count: BTreeMap::new(),
             timestamp: chrono::Utc::now() + chrono::Duration::seconds(update),
             cleanup_count: 0u32,
@@ -71,7 +71,7 @@ fn read_lines<R: BufRead>(
 
     let headers = LegendHeaders::from_display_flags(&display_flags);
 
-    let mut app_state = AppState::from_update(args.update);
+    let mut app_state = AppCounters::from_update(args.update);
 
     for line in reader.lines() {
         match line {
