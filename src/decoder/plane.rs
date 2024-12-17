@@ -11,6 +11,7 @@ pub use legend::Legend;
 pub use simple_display::format_simple_display;
 
 use crate::decoder::Capability;
+use crate::Args;
 use chrono::{DateTime, Utc};
 use std::fmt::{self, Display};
 use std::{
@@ -28,6 +29,28 @@ impl Planes {
     pub fn new() -> Self {
         Planes {
             aircrafts: Arc::new(RwLock::new(HashMap::new())),
+        }
+    }
+
+    pub fn update_aircraft(
+        &mut self,
+        downlink: &DF,
+        message: &[u32],
+        df: u32,
+        icao: u32,
+        args: &Args,
+    ) {
+        if let Ok(mut planes) = self.aircrafts.write() {
+            planes
+                .entry(icao)
+                .and_modify(|p| {
+                    if df < 20 && !&args.use_update_method {
+                        p.update_from_downlink(downlink)
+                    } else {
+                        p.update(message, df, args.relaxed)
+                    }
+                })
+                .or_insert(Plane::from_downlink(downlink, icao));
         }
     }
 }

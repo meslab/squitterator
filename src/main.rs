@@ -16,7 +16,7 @@ fn main() -> Result<()> {
 
     let planes = Planes::new();
 
-    let reader_thread = spawn_reader_thread(Arc::new(args), planes.aircrafts);
+    let reader_thread = spawn_reader_thread(Arc::new(args), planes);
     reader_thread
         .join()
         .expect("Couldn't join on the associated thread")

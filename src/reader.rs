@@ -3,28 +3,20 @@ mod planes;
 
 pub use planes::print_planes;
 
-use crate::{
-    df, icao, message, Args, DisplayFlags, Downlink, Legend, LegendHeaders, Plane,
-    UpdateFromDownlink, DF,
-};
+use crate::{df, icao, message, Args, DisplayFlags, Downlink, Legend, LegendHeaders, Planes, DF};
 use log::{debug, error, info, warn};
 use std::{
-    collections::HashMap,
     fs::File,
     io::{BufRead, BufReader, Result, Write},
     net::TcpStream,
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, Mutex},
     thread::{self, sleep},
     time::Duration,
 };
 
 use counters::AppCounters;
 
-fn read_lines<R: BufRead>(
-    reader: R,
-    args: &Args,
-    planes: &Arc<RwLock<HashMap<u32, Plane>>>,
-) -> Result<()> {
+fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result<()> {
     let downlink_error_log_file = args
         .downlink_log
         .as_ref()
@@ -75,18 +67,8 @@ fn read_lines<R: BufRead>(
                     if let Some(icao) = icao(&message, df) {
                         let now = chrono::Utc::now();
                         if let Ok(downlink) = DF::from_message(&message) {
-                            if let Ok(mut planes) = planes.write() {
-                                planes
-                                    .entry(icao)
-                                    .and_modify(|p| {
-                                        if df < 20 && !&args.use_update_method {
-                                            p.update_from_downlink(&downlink)
-                                        } else {
-                                            p.update(&message, df, args.relaxed)
-                                        }
-                                    })
-                                    .or_insert(Plane::from_downlink(&downlink, icao));
-
+                            planes.update_aircraft(&downlink, &message, df, icao, &args);
+                            if let Ok(mut planes) = planes.aircrafts.write() {
                                 if app_state.cleanup_count > 10 {
                                     planes.retain(|_, plane| {
                                         let elapsed = now
@@ -125,7 +107,7 @@ fn read_lines<R: BufRead>(
 
                             headers.print_header();
                             headers.print_separator();
-                            print_planes(planes, args, &display_flags);
+                            print_planes(&planes.aircrafts, args, &display_flags);
                             headers.print_separator();
 
                             if args.count_df {
@@ -143,20 +125,17 @@ fn read_lines<R: BufRead>(
     Ok(())
 }
 
-pub fn spawn_reader_thread(
-    args: Arc<Args>,
-    planes: Arc<RwLock<HashMap<u32, Plane>>>,
-) -> thread::JoinHandle<Result<()>> {
+pub fn spawn_reader_thread(args: Arc<Args>, mut planes: Planes) -> thread::JoinHandle<Result<()>> {
     thread::spawn(move || {
         if !args.tcp.is_empty() {
-            connect_and_read_tcp(args, &planes)
+            connect_and_read_tcp(args, &mut planes)
         } else {
-            read_from_file(args, &planes)
+            read_from_file(args, &mut planes)
         }
     })
 }
 
-fn connect_and_read_tcp(args: Arc<Args>, planes: &Arc<RwLock<HashMap<u32, Plane>>>) -> Result<()> {
+fn connect_and_read_tcp(args: Arc<Args>, planes: &mut Planes) -> Result<()> {
     loop {
         match TcpStream::connect(&args.tcp) {
             Ok(stream) => {
@@ -175,7 +154,7 @@ fn connect_and_read_tcp(args: Arc<Args>, planes: &Arc<RwLock<HashMap<u32, Plane>
     }
 }
 
-fn read_from_file(args: Arc<Args>, planes: &Arc<RwLock<HashMap<u32, Plane>>>) -> Result<()> {
+fn read_from_file(args: Arc<Args>, planes: &mut Planes) -> Result<()> {
     let file = File::open(&args.source)?;
     let reader = BufReader::new(file);
     read_lines(reader, &args, planes)
