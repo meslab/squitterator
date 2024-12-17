@@ -62,7 +62,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
                     if let Some(icao) = icao(&message, df) {
                         let now = chrono::Utc::now();
                         if let Ok(downlink) = DF::from_message(&message) {
-                            planes.update_aircraft(&downlink, &message, df, icao, &args);
+                            planes.update_aircraft(&downlink, &message, df, icao, args);
                             planes.cleanup(&mut app_state, now);
                         }
 
@@ -82,7 +82,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
                             headers.print_header();
                             headers.print_separator();
 
-                            planes.print(&args, &display_flags);
+                            planes.print(args, &display_flags);
 
                             headers.print_separator();
 
