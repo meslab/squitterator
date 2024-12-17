@@ -14,7 +14,7 @@ use std::{
     time::Duration,
 };
 
-use counters::AppCounters;
+pub(crate) use counters::AppCounters;
 
 fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result<()> {
     let downlink_error_log_file = args
@@ -68,28 +68,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
                         let now = chrono::Utc::now();
                         if let Ok(downlink) = DF::from_message(&message) {
                             planes.update_aircraft(&downlink, &message, df, icao, &args);
-                            if let Ok(mut planes) = planes.aircrafts.write() {
-                                if app_state.cleanup_count > 10 {
-                                    planes.retain(|_, plane| {
-                                        let elapsed = now
-                                            .signed_duration_since(plane.timestamp)
-                                            .num_seconds();
-                                        if elapsed < 60 {
-                                            true
-                                        } else {
-                                            debug!(
-                                                "Plane {} has been removed from view",
-                                                plane.icao
-                                            );
-                                            false
-                                        }
-                                    });
-                                    planes.shrink_to_fit();
-                                    app_state.reset_cleanup_count();
-                                }
-
-                                app_state.increment_cleanup_count();
-                            };
+                            planes.cleanup(&mut app_state, now);
                         }
 
                         if let Some(ref dlf) = downlink_error_log_file {

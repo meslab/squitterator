@@ -8,9 +8,11 @@ mod update_position;
 pub use from_downlink::UpdateFromDownlink;
 pub use header::{DisplayFlags, LegendHeaders};
 pub use legend::Legend;
+use log::debug;
 pub use simple_display::format_simple_display;
 
 use crate::decoder::Capability;
+use crate::reader::AppCounters;
 use crate::Args;
 use chrono::{DateTime, Utc};
 use std::fmt::{self, Display};
@@ -52,6 +54,26 @@ impl Planes {
                 })
                 .or_insert(Plane::from_downlink(downlink, icao));
         }
+    }
+
+    pub(crate) fn cleanup(&mut self, app_state: &mut AppCounters, now: DateTime<Utc>) {
+        if let Ok(mut planes) = self.aircrafts.write() {
+            if app_state.cleanup_count > 10 {
+                planes.retain(|_, plane| {
+                    let elapsed = now.signed_duration_since(plane.timestamp).num_seconds();
+                    if elapsed < 60 {
+                        true
+                    } else {
+                        debug!("Plane {} has been removed from view", plane.icao);
+                        false
+                    }
+                });
+                planes.shrink_to_fit();
+                app_state.reset_cleanup_count();
+            }
+
+            app_state.increment_cleanup_count();
+        };
     }
 }
 
