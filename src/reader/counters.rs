@@ -9,7 +9,7 @@ pub(super) struct AppCounters {
 }
 
 impl AppCounters {
-    pub(super) fn from_update(update: i64) -> Self {
+    pub(super) fn from_update_interval(update: i64) -> Self {
         AppCounters {
             df_count: BTreeMap::new(),
             timestamp: chrono::Utc::now() + chrono::Duration::seconds(update),
@@ -31,5 +31,20 @@ impl AppCounters {
 
     pub(super) fn reset_timestamp(&mut self, now: DateTime<Utc>) {
         self.timestamp = now
+    }
+
+    pub(super) fn print_df_count_line(&self) {
+        println!(
+            "{}",
+            self.df_count
+                .iter()
+                .fold(String::new(), |acc, (df, count)| {
+                    acc + &format!("DF{}:{} ", df, count)
+                })
+        );
+    }
+
+    pub(super) fn is_time_to_refresh(&self, now: &DateTime<Utc>, update: i64) -> bool {
+        now.signed_duration_since(self.timestamp).num_seconds() > update
     }
 }

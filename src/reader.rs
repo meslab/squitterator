@@ -41,7 +41,7 @@ fn read_lines<R: BufRead>(
 
     let headers = LegendHeaders::from_display_flags(&display_flags);
 
-    let mut app_state = AppCounters::from_update(args.update);
+    let mut app_state = AppCounters::from_update_interval(args.update);
 
     for line in reader.lines() {
         match line {
@@ -119,9 +119,7 @@ fn read_lines<R: BufRead>(
                             }
                         }
 
-                        if now.signed_duration_since(app_state.timestamp).num_seconds()
-                            > args.update
-                            && !display_flags.quiet()
+                        if !display_flags.quiet() && app_state.is_time_to_refresh(&now, args.update)
                         {
                             clear_screen();
 
@@ -131,13 +129,7 @@ fn read_lines<R: BufRead>(
                             headers.print_separator();
 
                             if args.count_df {
-                                let result = app_state
-                                    .df_count
-                                    .iter()
-                                    .fold(String::new(), |acc, (df, count)| {
-                                        acc + &format!("DF{}:{} ", df, count)
-                                    });
-                                println!("{}", result);
+                                app_state.print_df_count_line();
                             }
 
                             app_state.reset_timestamp(now);
