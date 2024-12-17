@@ -1,6 +1,6 @@
+mod counters;
 mod planes;
 
-use chrono::{DateTime, Utc};
 pub use planes::print_planes;
 
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
 };
 use log::{debug, error, info, warn};
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::HashMap,
     fs::File,
     io::{BufRead, BufReader, Result, Write},
     net::TcpStream,
@@ -18,37 +18,7 @@ use std::{
     time::Duration,
 };
 
-struct AppCounters {
-    df_count: BTreeMap<u32, i32>,
-    timestamp: DateTime<Utc>,
-    cleanup_count: u32,
-}
-
-impl AppCounters {
-    fn from_update(update: i64) -> Self {
-        AppCounters {
-            df_count: BTreeMap::new(),
-            timestamp: chrono::Utc::now() + chrono::Duration::seconds(update),
-            cleanup_count: 0u32,
-        }
-    }
-
-    fn update_count(&mut self, df: u32) {
-        *self.df_count.entry(df).or_insert(1) += 1;
-    }
-
-    fn reset_cleanup_count(&mut self) {
-        self.cleanup_count = 0;
-    }
-
-    fn increment_cleanup_count(&mut self) {
-        self.cleanup_count += 1;
-    }
-
-    fn reset_timestamp(&mut self, now: DateTime<Utc>) {
-        self.timestamp = now
-    }
-}
+use counters::AppCounters;
 
 fn read_lines<R: BufRead>(
     reader: R,
