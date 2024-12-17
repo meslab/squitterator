@@ -1,8 +1,6 @@
-mod counters;
-
-pub(crate) use counters::AppCounters;
-
-use crate::{df, icao, message, Args, DisplayFlags, Downlink, Legend, LegendHeaders, Planes, DF};
+use crate::{
+    df, icao, message, AppCounters, Args, DisplayFlags, Downlink, Legend, LegendHeaders, Planes, DF,
+};
 use log::{debug, error, info, warn};
 use std::{
     fs::File,
@@ -85,7 +83,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
                             headers.print_separator();
 
                             planes.print(&args, &display_flags);
-                            
+
                             headers.print_separator();
 
                             if args.count_df {
