@@ -8,8 +8,10 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-pub use super::plane::DisplayFlags;
-use super::{plane::format_simple_display, plane::Plane, UpdateFromDownlink, DF};
+use super::{
+    plane::{format_simple_display, DisplayFlags, Plane},
+    UpdateFromDownlink, DF,
+};
 
 pub struct Planes {
     pub aircrafts: Arc<RwLock<HashMap<u32, Plane>>>,
