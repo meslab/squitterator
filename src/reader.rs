@@ -83,8 +83,9 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
 
                             headers.print_header();
                             headers.print_separator();
-                            // print_planes(&planes.aircrafts, args, &display_flags);
+
                             planes.print(&args, &display_flags);
+                            
                             headers.print_separator();
 
                             if args.count_df {
