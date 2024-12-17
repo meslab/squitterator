@@ -1,5 +1,6 @@
 mod planes;
 
+use chrono::{DateTime, Utc};
 pub use planes::print_planes;
 
 use crate::{
@@ -16,6 +17,38 @@ use std::{
     thread::{self, sleep},
     time::Duration,
 };
+
+struct AppState {
+    df_count: BTreeMap<u32, i32>,
+    timestamp: DateTime<Utc>,
+    cleanup_count: u32,
+}
+
+impl AppState {
+    fn from_update(update: i64) -> Self {
+        AppState {
+            df_count: BTreeMap::new(),
+            timestamp: chrono::Utc::now() + chrono::Duration::seconds(update),
+            cleanup_count: 0u32,
+        }
+    }
+
+    fn update_count(&mut self, df: u32) {
+        *self.df_count.entry(df).or_insert(1) += 1;
+    }
+
+    fn reset_cleanup_count(&mut self) {
+        self.cleanup_count = 0;
+    }
+
+    fn increment_cleanup_count(&mut self) {
+        self.cleanup_count += 1;
+    }
+
+    fn reset_timestamp(&mut self, now: DateTime<Utc>) {
+        self.timestamp = now
+    }
+}
 
 fn read_lines<R: BufRead>(
     reader: R,
@@ -38,9 +71,8 @@ fn read_lines<R: BufRead>(
 
     let headers = LegendHeaders::from_display_flags(&display_flags);
 
-    let mut df_count = BTreeMap::new();
-    let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
-    let mut cleanup_count = 0u32;
+    let mut app_state = AppState::from_update(args.update);
+
     for line in reader.lines() {
         match line {
             Ok(squitter) => {
@@ -67,7 +99,7 @@ fn read_lines<R: BufRead>(
                     }
 
                     if args.count_df {
-                        *df_count.entry(df).or_insert(1) += 1;
+                        app_state.update_count(df);
                     }
 
                     if let Some(icao) = icao(&message, df) {
@@ -85,7 +117,7 @@ fn read_lines<R: BufRead>(
                                     })
                                     .or_insert(Plane::from_downlink(&downlink, icao));
 
-                                if cleanup_count > 10 {
+                                if app_state.cleanup_count > 10 {
                                     planes.retain(|_, plane| {
                                         let elapsed = now
                                             .signed_duration_since(plane.timestamp)
@@ -101,10 +133,10 @@ fn read_lines<R: BufRead>(
                                         }
                                     });
                                     planes.shrink_to_fit();
-                                    cleanup_count = 0;
+                                    app_state.reset_cleanup_count();
                                 }
 
-                                cleanup_count += 1;
+                                app_state.increment_cleanup_count();
                             };
                         }
 
@@ -117,7 +149,8 @@ fn read_lines<R: BufRead>(
                             }
                         }
 
-                        if now.signed_duration_since(timestamp).num_seconds() > args.update
+                        if now.signed_duration_since(app_state.timestamp).num_seconds()
+                            > args.update
                             && !display_flags.quiet()
                         {
                             clear_screen();
@@ -128,14 +161,16 @@ fn read_lines<R: BufRead>(
                             headers.print_separator();
 
                             if args.count_df {
-                                let result =
-                                    df_count.iter().fold(String::new(), |acc, (df, count)| {
+                                let result = app_state
+                                    .df_count
+                                    .iter()
+                                    .fold(String::new(), |acc, (df, count)| {
                                         acc + &format!("DF{}:{} ", df, count)
                                     });
                                 println!("{}", result);
                             }
 
-                            timestamp = now;
+                            app_state.reset_timestamp(now);
                         }
                     }
                 };
