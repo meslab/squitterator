@@ -1,7 +1,6 @@
 mod counters;
-mod planes;
 
-pub use planes::print_planes;
+pub(crate) use counters::AppCounters;
 
 use crate::{df, icao, message, Args, DisplayFlags, Downlink, Legend, LegendHeaders, Planes, DF};
 use log::{debug, error, info, warn};
@@ -13,8 +12,6 @@ use std::{
     thread::{self, sleep},
     time::Duration,
 };
-
-pub(crate) use counters::AppCounters;
 
 fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result<()> {
     let downlink_error_log_file = args
@@ -86,7 +83,8 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
 
                             headers.print_header();
                             headers.print_separator();
-                            print_planes(&planes.aircrafts, args, &display_flags);
+                            // print_planes(&planes.aircrafts, args, &display_flags);
+                            planes.print(&args, &display_flags);
                             headers.print_separator();
 
                             if args.count_df {

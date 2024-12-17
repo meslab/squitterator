@@ -8,80 +8,12 @@ mod update_position;
 pub use from_downlink::UpdateFromDownlink;
 pub use header::{DisplayFlags, LegendHeaders};
 pub use legend::Legend;
-use log::debug;
 pub use simple_display::format_simple_display;
 
+use super::DF;
 use crate::decoder::Capability;
-use crate::reader::AppCounters;
-use crate::Args;
 use chrono::{DateTime, Utc};
 use std::fmt::{self, Display};
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-};
-
-use super::DF;
-
-pub struct Planes {
-    pub aircrafts: Arc<RwLock<HashMap<u32, Plane>>>,
-}
-
-impl Planes {
-    pub fn new() -> Self {
-        Planes {
-            aircrafts: Arc::new(RwLock::new(HashMap::new())),
-        }
-    }
-
-    pub fn update_aircraft(
-        &mut self,
-        downlink: &DF,
-        message: &[u32],
-        df: u32,
-        icao: u32,
-        args: &Args,
-    ) {
-        if let Ok(mut planes) = self.aircrafts.write() {
-            planes
-                .entry(icao)
-                .and_modify(|p| {
-                    if df < 20 && !&args.use_update_method {
-                        p.update_from_downlink(downlink)
-                    } else {
-                        p.update(message, df, args.relaxed)
-                    }
-                })
-                .or_insert(Plane::from_downlink(downlink, icao));
-        }
-    }
-
-    pub(crate) fn cleanup(&mut self, app_state: &mut AppCounters, now: DateTime<Utc>) {
-        if let Ok(mut planes) = self.aircrafts.write() {
-            if app_state.cleanup_count > 10 {
-                planes.retain(|_, plane| {
-                    let elapsed = now.signed_duration_since(plane.timestamp).num_seconds();
-                    if elapsed < 60 {
-                        true
-                    } else {
-                        debug!("Plane {} has been removed from view", plane.icao);
-                        false
-                    }
-                });
-                planes.shrink_to_fit();
-                app_state.reset_cleanup_count();
-            }
-
-            app_state.increment_cleanup_count();
-        };
-    }
-}
-
-impl Default for Planes {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 pub struct Plane {
     pub icao: u32,
