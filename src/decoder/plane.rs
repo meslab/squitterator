@@ -10,11 +10,10 @@ pub use header::{DisplayFlags, LegendHeaders};
 pub use legend::Legend;
 pub use simple_display::format_simple_display;
 
+use super::DF;
 use crate::decoder::Capability;
 use chrono::{DateTime, Utc};
 use std::fmt::{self, Display};
-
-use super::DF;
 
 pub struct Plane {
     pub icao: u32,

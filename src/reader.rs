@@ -1,27 +1,17 @@
-mod planes;
-
-pub use planes::print_planes;
-
 use crate::{
-    df, icao, message, Args, DisplayFlags, Downlink, Legend, LegendHeaders, Plane,
-    UpdateFromDownlink, DF,
+    df, icao, message, AppCounters, Args, DisplayFlags, Downlink, Legend, LegendHeaders, Planes, DF,
 };
-use log::{debug, error, info, warn};
+use log::{debug, error, info};
 use std::{
-    collections::{BTreeMap, HashMap},
     fs::File,
     io::{BufRead, BufReader, Result, Write},
     net::TcpStream,
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, Mutex},
     thread::{self, sleep},
     time::Duration,
 };
 
-fn read_lines<R: BufRead>(
-    reader: R,
-    args: &Args,
-    planes: &Arc<RwLock<HashMap<u32, Plane>>>,
-) -> Result<()> {
+fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result<()> {
     let downlink_error_log_file = args
         .downlink_log
         .as_ref()
@@ -38,128 +28,82 @@ fn read_lines<R: BufRead>(
 
     let headers = LegendHeaders::from_display_flags(&display_flags);
 
-    let mut df_count = BTreeMap::new();
-    let mut timestamp = chrono::Utc::now() + chrono::Duration::seconds(args.update);
-    let mut cleanup_count = 0u32;
-    for line in reader.lines() {
-        match line {
-            Ok(squitter) => {
-                debug!("Squitter: {}", squitter);
+    let mut app_state = AppCounters::from_update_interval(args.update);
 
-                if let Some(message) = message(&squitter) {
-                    let df = match df(&message) {
-                        Some(df) => df,
-                        None => {
-                            continue;
-                        }
-                    };
+    for line in reader.lines().map_while(Result::ok) {
+        if let Some(message) = message(&line) {
+            let df = match df(&message) {
+                Some(df) => df,
+                None => {
+                    continue;
+                }
+            };
+            debug!("DF:{}, L:{}", df, &line);
 
-                    if let Some(m) = &args.log_messages {
-                        if m.contains(&df) {
-                            error!("DF:{}, L:{}", df, squitter);
-                        }
+            if let Some(m) = &args.log_messages {
+                if m.contains(&df) {
+                    error!("DF:{}, L:{}", df, line);
+                }
+            }
+
+            if let Some(only) = &args.filter {
+                if only.iter().all(|&x| x != df) {
+                    continue;
+                }
+            }
+
+            if args.count_df {
+                app_state.update_count(df);
+            }
+
+            if let Some(icao) = icao(&message, df) {
+                let now = chrono::Utc::now();
+                if let Ok(downlink) = DF::from_message(&message) {
+                    planes.update_aircraft(&downlink, &message, df, icao, args);
+                    planes.cleanup(&mut app_state, now);
+                }
+
+                if let Some(ref dlf) = downlink_error_log_file {
+                    if let Ok(downlink) = DF::from_message(&message) {
+                        let mut dlf = dlf.lock().expect("Cannot open downlink error log file.");
+                        write!(dlf, "{}", downlink)?;
+                        debug!("Writing to {:?}", &dlf);
                     }
+                }
 
-                    if let Some(only) = &args.filter {
-                        if only.iter().all(|&x| x != df) {
-                            continue;
-                        }
-                    }
+                if !display_flags.quiet() && app_state.is_time_to_refresh(&now, args.update) {
+                    clear_screen();
+
+                    headers.print_header();
+                    headers.print_separator();
+
+                    planes.print(args, &display_flags);
+
+                    headers.print_separator();
 
                     if args.count_df {
-                        *df_count.entry(df).or_insert(1) += 1;
+                        app_state.print_df_count_line();
                     }
 
-                    if let Some(icao) = icao(&message, df) {
-                        let now = chrono::Utc::now();
-                        if let Ok(downlink) = DF::from_message(&message) {
-                            if let Ok(mut planes) = planes.write() {
-                                planes
-                                    .entry(icao)
-                                    .and_modify(|p| {
-                                        if df < 20 && !&args.use_update_method {
-                                            p.update_from_downlink(&downlink)
-                                        } else {
-                                            p.update(&message, df, args.relaxed)
-                                        }
-                                    })
-                                    .or_insert(Plane::from_downlink(&downlink, icao));
-
-                                if cleanup_count > 10 {
-                                    planes.retain(|_, plane| {
-                                        let elapsed = now
-                                            .signed_duration_since(plane.timestamp)
-                                            .num_seconds();
-                                        if elapsed < 60 {
-                                            true
-                                        } else {
-                                            debug!(
-                                                "Plane {} has been removed from view",
-                                                plane.icao
-                                            );
-                                            false
-                                        }
-                                    });
-                                    planes.shrink_to_fit();
-                                    cleanup_count = 0;
-                                }
-
-                                cleanup_count += 1;
-                            };
-                        }
-
-                        if let Some(ref dlf) = downlink_error_log_file {
-                            if let Ok(downlink) = DF::from_message(&message) {
-                                let mut dlf =
-                                    dlf.lock().expect("Cannot open downlink error log file.");
-                                write!(dlf, "{}", downlink)?;
-                                debug!("Writing to {:?}", &dlf);
-                            }
-                        }
-
-                        if now.signed_duration_since(timestamp).num_seconds() > args.update
-                            && !display_flags.quiet()
-                        {
-                            clear_screen();
-
-                            headers.print_header();
-                            headers.print_separator();
-                            print_planes(planes, args, &display_flags);
-                            headers.print_separator();
-
-                            if args.count_df {
-                                let result =
-                                    df_count.iter().fold(String::new(), |acc, (df, count)| {
-                                        acc + &format!("DF{}:{} ", df, count)
-                                    });
-                                println!("{}", result);
-                            }
-
-                            timestamp = now;
-                        }
-                    }
-                };
+                    app_state.reset_timestamp(now);
+                }
             }
-            Err(e) => warn!("Warn: {}", e),
-        }
+        };
     }
     Ok(())
 }
 
-pub fn spawn_reader_thread(
-    args: Arc<Args>,
-    planes: Arc<RwLock<HashMap<u32, Plane>>>,
-) -> thread::JoinHandle<Result<()>> {
+pub fn spawn_reader_thread(args: Arc<Args>, mut planes: Planes) -> thread::JoinHandle<Result<()>> {
     thread::spawn(move || {
         if !args.tcp.is_empty() {
-            connect_and_read_tcp(args, &planes)
+            connect_and_read_tcp(args, &mut planes)
         } else {
-            read_from_file(args, &planes)
+            read_from_file(args, &mut planes)
         }
     })
 }
 
-fn connect_and_read_tcp(args: Arc<Args>, planes: &Arc<RwLock<HashMap<u32, Plane>>>) -> Result<()> {
+fn connect_and_read_tcp(args: Arc<Args>, planes: &mut Planes) -> Result<()> {
     loop {
         match TcpStream::connect(&args.tcp) {
             Ok(stream) => {
@@ -178,7 +122,7 @@ fn connect_and_read_tcp(args: Arc<Args>, planes: &Arc<RwLock<HashMap<u32, Plane>
     }
 }
 
-fn read_from_file(args: Arc<Args>, planes: &Arc<RwLock<HashMap<u32, Plane>>>) -> Result<()> {
+fn read_from_file(args: Arc<Args>, planes: &mut Planes) -> Result<()> {
     let file = File::open(&args.source)?;
     let reader = BufReader::new(file);
     read_lines(reader, &args, planes)

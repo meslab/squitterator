@@ -22,8 +22,8 @@ pub struct Args {
     #[clap(short = 'D', long, default_value = None)]
     pub downlink_log: Option<String>,
 
-    #[clap(short = 'l', long, default_value = "/dev/null")]
-    pub error_log: String,
+    #[clap(short = 'l', long, default_value = None)]
+    pub error_log: Option<String>,
 
     #[clap(short, long, default_value = None, help = "Process only specific DF messages\n -f 21 -f 4 - DF4 and DF21,\n -f 21 - only DF21, etc")]
     pub filter: Option<Vec<u32>>,
