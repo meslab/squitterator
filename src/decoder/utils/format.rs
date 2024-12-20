@@ -48,4 +48,24 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_sbs_squitter_result() {
+        let line = "@009736E2736B8D40717EF82100020049B8A8887A;";
+        let result = clean_squitter(line);
+        assert_ne!(
+            result.unwrap(),
+            [
+                8, 13, 4, 0, 7, 1, 7, 14, 15, 8, 2, 1, 0, 0, 0, 2, 0, 0, 4, 9, 11, 8, 10, 8, 8, 8,
+                7, 11
+            ]
+        );
+    }
+
+    #[test]
+    fn test_sbs_squitter_invalid_none_result() {
+        let line = "@009736E2736B8D40717EF82100020049B8A8887G;";
+        let result = clean_squitter(line);
+        assert!(result.is_none());
+    }
 }
