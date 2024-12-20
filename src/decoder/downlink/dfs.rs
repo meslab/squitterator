@@ -1,6 +1,6 @@
 use std::fmt::{self, Debug, Display};
 
-use super::*;
+use super::{df, Ext, Mds, Srt};
 
 #[derive(Debug)]
 pub enum DF {
