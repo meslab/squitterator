@@ -1,3 +1,4 @@
+#[inline]
 pub(crate) fn range_value(message: &[u32], sb: u32, eb: u32) -> Option<u32> {
     let (sb_ibyte, sb_ibit) = bit_location(sb);
     let (eb_ibyte, eb_ibit) = bit_location(eb);
