@@ -1,3 +1,4 @@
+#[inline]
 pub(crate) fn range_value(message: &[u32], sb: u32, eb: u32) -> Option<u32> {
     let (sb_ibyte, sb_ibit) = bit_location(sb);
     let (eb_ibyte, eb_ibit) = bit_location(eb);
@@ -24,6 +25,7 @@ pub(crate) fn range_value(message: &[u32], sb: u32, eb: u32) -> Option<u32> {
     Some(result)
 }
 
+#[inline]
 pub(crate) fn flag_and_range_value(
     message: &[u32],
     flag: u32,
@@ -41,6 +43,7 @@ pub(crate) fn flag_and_range_value(
     range_value(message, sb, eb).map(|value| (flag, value))
 }
 
+#[inline]
 pub(crate) fn status_flag_and_range_value(
     message: &[u32],
     status: u32,
@@ -59,6 +62,7 @@ pub(crate) fn status_flag_and_range_value(
     flag_and_range_value(message, flag, sb, eb).map(|(f, v)| (status, f, v))
 }
 
+#[inline]
 fn bit_location(position: u32) -> (usize, usize) {
     let ibyte: usize = ((position - 1) / 4).try_into().expect("Cannot set ibyte.");
     let ibit: usize = ((position - 1) % 4).try_into().expect("Cannot set ibit.");
