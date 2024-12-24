@@ -31,64 +31,66 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
     let mut app_state = AppCounters::from_update_interval(args.update);
 
     for line in reader.lines().map_while(Result::ok) {
-        if let Some(message) = message(&line) {
-            let df = match df(&message) {
-                Some(df) => df,
-                None => {
-                    continue;
-                }
-            };
-            debug!("DF:{}, L:{}", df, &line);
+        let Some(message) = message(&line) else {
+            continue;
+        };
 
-            if let Some(m) = &args.log_messages {
-                if m.contains(&df) {
-                    error!("DF:{}, L:{}", df, line);
-                }
-            }
+        let Some(df) = df(&message) else {
+            continue;
+        };
 
-            if let Some(only) = &args.filter {
-                if only.iter().all(|&x| x != df) {
-                    continue;
-                }
+        debug!("DF:{}, L:{}", df, &line);
+
+        let Some(icao) = icao(&message, df) else {
+            continue;
+        };
+
+        if let Some(m) = &args.log_messages {
+            if m.contains(&df) {
+                error!("DF:{}, L:{}", df, line);
             }
+        }
+
+        if let Some(only) = &args.filter {
+            if only.iter().all(|&x| x != df) {
+                continue;
+            }
+        }
+
+        if args.count_df {
+            app_state.update_count(df);
+        }
+
+        let now = chrono::Utc::now();
+        if let Ok(downlink) = DF::from_message(&message) {
+            planes.update_aircraft(&downlink, &message, df, icao, args);
+            planes.cleanup(&mut app_state, now);
+        }
+
+        if let Some(ref dlf) = downlink_error_log_file {
+            if let Ok(downlink) = DF::from_message(&message) {
+                let mut dlf = dlf.lock().expect("Cannot open downlink error log file.");
+                write!(dlf, "{}", downlink)?;
+                debug!("Writing to {:?}", &dlf);
+            }
+        }
+
+        if !display_flags.quiet() && app_state.is_time_to_refresh(&now, args.update) {
+            clear_screen();
+
+            headers.print_header();
+            headers.print_separator();
+
+            planes.print(args, &display_flags);
+
+            headers.print_separator();
 
             if args.count_df {
-                app_state.update_count(df);
+                app_state.print_df_count_line();
             }
 
-            if let Some(icao) = icao(&message, df) {
-                let now = chrono::Utc::now();
-                if let Ok(downlink) = DF::from_message(&message) {
-                    planes.update_aircraft(&downlink, &message, df, icao, args);
-                    planes.cleanup(&mut app_state, now);
-                }
-
-                if let Some(ref dlf) = downlink_error_log_file {
-                    if let Ok(downlink) = DF::from_message(&message) {
-                        let mut dlf = dlf.lock().expect("Cannot open downlink error log file.");
-                        write!(dlf, "{}", downlink)?;
-                        debug!("Writing to {:?}", &dlf);
-                    }
-                }
-
-                if !display_flags.quiet() && app_state.is_time_to_refresh(&now, args.update) {
-                    clear_screen();
-
-                    headers.print_header();
-                    headers.print_separator();
-
-                    planes.print(args, &display_flags);
-
-                    headers.print_separator();
-
-                    if args.count_df {
-                        app_state.print_df_count_line();
-                    }
-
-                    app_state.reset_timestamp(now);
-                }
-            }
-        };
+            app_state.reset_timestamp(now);
+        }
     }
     Ok(())
 }
