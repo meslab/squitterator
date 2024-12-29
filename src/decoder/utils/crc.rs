@@ -2,7 +2,7 @@ use std::vec;
 
 use log::debug;
 
-use crate::decoder::range_value;
+use crate::range_value;
 
 pub(crate) fn get_crc(message: &[u32], df: u32) -> u32 {
     match df {

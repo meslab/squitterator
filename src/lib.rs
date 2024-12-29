@@ -13,4 +13,7 @@ pub use decoder::{
 pub use errors::Result;
 pub use logger::initialize_logger;
 pub use reader::spawn_reader_thread;
-pub(crate) use {counters::AppCounters, decoder::flag_and_range_value};
+pub(crate) use {
+    counters::AppCounters,
+    decoder::{flag_and_range_value, range_value},
+};
