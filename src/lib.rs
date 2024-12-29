@@ -1,6 +1,7 @@
 mod arguments;
 mod counters;
 mod decoder;
+mod errors;
 mod logger;
 mod reader;
 
@@ -10,5 +11,6 @@ pub use decoder::{
     df, icao, message, set_observer_coords_from_str, DisplayFlags, Downlink, Legend, LegendHeaders,
     Plane, Planes, UpdateFromDownlink, DF,
 };
+pub use errors::Result;
 pub use logger::initialize_logger;
 pub use reader::spawn_reader_thread;

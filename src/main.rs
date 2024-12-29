@@ -1,9 +1,9 @@
 use squitterator::{
-    initialize_logger, set_observer_coords_from_str, spawn_reader_thread, Args, Planes,
+    initialize_logger, set_observer_coords_from_str, spawn_reader_thread, Args, Planes, Result,
 };
 
 use clap::Parser;
-use std::{io::Result, sync::Arc};
+use std::sync::Arc;
 
 fn main() -> Result<()> {
     let args = Args::parse();
@@ -17,7 +17,7 @@ fn main() -> Result<()> {
     let planes = Planes::new();
 
     let reader_thread = spawn_reader_thread(Arc::new(args), planes);
-    reader_thread
+    Ok(reader_thread
         .join()
-        .expect("Couldn't join on the associated thread")
+        .expect("Couldn't join on the associated thread")?)
 }
