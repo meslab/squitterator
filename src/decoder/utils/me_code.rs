@@ -1,4 +1,4 @@
-use crate::decoder::flag_and_range_value;
+use crate::flag_and_range_value;
 
 /// Calculates the Mode E (ME) code from the given ADS-B message.
 ///
