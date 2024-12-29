@@ -1,5 +1,5 @@
 pub(crate) fn altitude_delta(message: &[u32]) -> Option<i32> {
-    crate::decoder::flag_and_range_value(message, 81, 82, 88)
+    crate::flag_and_range_value(message, 81, 82, 88)
         .filter(|&f| f.1 != 0)
         .map(|(sign, value)| delta(sign, value))
 }

@@ -1,6 +1,6 @@
 pub(crate) fn cpr(message: &[u32]) -> Option<(u32, u32, u32)> {
-    if let Some((cpr_form, cpr_lat)) = crate::decoder::flag_and_range_value(message, 54, 55, 71) {
-        crate::decoder::range_value(message, 72, 88).map(|cpr_long| (cpr_form, cpr_lat, cpr_long))
+    if let Some((cpr_form, cpr_lat)) = crate::flag_and_range_value(message, 54, 55, 71) {
+        crate::range_value(message, 72, 88).map(|cpr_long| (cpr_form, cpr_lat, cpr_long))
     } else {
         None
     }

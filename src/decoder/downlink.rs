@@ -8,7 +8,7 @@ pub(crate) use extended::*;
 pub(crate) use mode_s::*;
 pub(crate) use short::*;
 
-use crate::decoder::range_value;
+use crate::range_value;
 
 /// Retrieves the Downlink Format (DF) from a message.
 ///
