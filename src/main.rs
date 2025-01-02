@@ -8,7 +8,9 @@ use std::sync::Arc;
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    initialize_logger(&args.error_log);
+    if let Some(error_log_file) = &args.error_log {
+        initialize_logger(error_log_file)?;
+    };
 
     if let Some(coord_str) = &args.observer_coord {
         set_observer_coords_from_str(coord_str)
