@@ -1,11 +1,11 @@
 use squitterator::{
-    initialize_logger, set_observer_coords_from_str, spawn_reader_thread, Args, Planes, Result,
+    initialize_logger, set_observer_coords_from_str, spawn_reader_thread, AppResult, Args, Planes,
 };
 
 use clap::Parser;
 use std::sync::Arc;
 
-fn main() -> Result<()> {
+fn main() -> AppResult<()> {
     let args = Args::parse();
 
     if let Some(error_log_file) = &args.error_log {

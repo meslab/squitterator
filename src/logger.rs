@@ -1,8 +1,8 @@
-use crate::Result;
+use crate::AppResult;
 use env_logger::{Builder, Env};
 use std::{fs::File, io::Write, sync::Mutex};
 
-pub fn initialize_logger(error_log_path: &str) -> Result<()> {
+pub fn initialize_logger(error_log_path: &str) -> AppResult<()> {
     let file = File::create(error_log_path)?;
 
     let error_log_file = Mutex::new(file);
