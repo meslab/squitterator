@@ -6,7 +6,7 @@ use clap::Parser;
 use std::sync::Arc;
 
 fn main() -> AppResult<()> {
-    let args = Args::parse();
+    let args = Arc::new(Args::parse());
 
     if let Some(error_log_file) = &args.error_log {
         initialize_logger(error_log_file)?;
@@ -18,7 +18,7 @@ fn main() -> AppResult<()> {
 
     let planes = Planes::new();
 
-    let reader_thread = spawn_reader_thread(Arc::new(args), planes);
+    let reader_thread = spawn_reader_thread(args, planes);
     reader_thread
         .join()
         .expect("Couldn't join on the associated thread")?;
