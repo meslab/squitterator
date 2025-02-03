@@ -63,16 +63,13 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
 
         let now = chrono::Utc::now();
         if let Ok(downlink) = DF::from_message(&message) {
-            planes.update_aircraft(&downlink, &message, df, icao, args);
-            planes.cleanup(&mut app_state, now);
-        }
-
-        if let Some(ref dlf) = downlink_error_log_file {
-            if let Ok(downlink) = DF::from_message(&message) {
+            if let Some(ref dlf) = downlink_error_log_file {
                 let mut dlf = dlf.lock().expect("Cannot open downlink error log file.");
                 write!(dlf, "{}", downlink)?;
                 debug!("Writing to {:?}", &dlf);
             }
+            planes.update_aircraft(&downlink, &message, df, icao, args);
+            planes.cleanup(&mut app_state, now);
         }
 
         if !display_flags.quiet() && app_state.is_time_to_refresh(&now, args.update) {
