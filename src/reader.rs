@@ -6,12 +6,12 @@ use std::{
     fs::File,
     io::{BufRead, BufReader, Result, Write},
     net::TcpStream,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, RwLock},
     thread::{self, sleep},
     time::Duration,
 };
 
-fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result<()> {
+fn read_lines<R: BufRead>(reader: R, args: &Args, planes: Arc<RwLock<Planes>>) -> Result<()> {
     let downlink_error_log_file = args
         .downlink_log
         .as_ref()
@@ -63,6 +63,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
 
         let now = chrono::Utc::now();
         if let Ok(downlink) = DF::from_message(&message) {
+            let mut planes = planes.write().expect("Cannot write lock planes.");
             planes.update_aircraft(&downlink, &message, df, icao, args);
             planes.cleanup(&mut app_state, now);
         }
@@ -81,6 +82,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
             headers.print_header();
             headers.print_separator();
 
+            let planes = planes.read().expect("Cannot read lock planes.");
             planes.print(args, &display_flags);
 
             headers.print_separator();
@@ -95,23 +97,26 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
     Ok(())
 }
 
-pub fn spawn_reader_thread(args: Arc<Args>, mut planes: Planes) -> thread::JoinHandle<Result<()>> {
+pub fn spawn_reader_thread(
+    args: Arc<Args>,
+    planes: Arc<RwLock<Planes>>,
+) -> thread::JoinHandle<Result<()>> {
     thread::spawn(move || {
         if !args.tcp.is_empty() {
-            connect_and_read_tcp(args, &mut planes)
+            connect_and_read_tcp(args, planes.clone())
         } else {
-            read_from_file(args, &mut planes)
+            read_from_file(args, planes.clone())
         }
     })
 }
 
-fn connect_and_read_tcp(args: Arc<Args>, planes: &mut Planes) -> Result<()> {
+fn connect_and_read_tcp(args: Arc<Args>, planes: Arc<RwLock<Planes>>) -> Result<()> {
     loop {
         match TcpStream::connect(&args.tcp) {
             Ok(stream) => {
                 info!("Successfully connected to the server {}", &args.tcp);
                 let reader = BufReader::new(stream);
-                if let Err(e) = read_lines(reader, &args, planes) {
+                if let Err(e) = read_lines(reader, &args, planes.clone()) {
                     error!("Error during reading: {}", e);
                     sleep(Duration::from_secs(5));
                 }
@@ -124,7 +129,7 @@ fn connect_and_read_tcp(args: Arc<Args>, planes: &mut Planes) -> Result<()> {
     }
 }
 
-fn read_from_file(args: Arc<Args>, planes: &mut Planes) -> Result<()> {
+fn read_from_file(args: Arc<Args>, planes: Arc<RwLock<Planes>>) -> Result<()> {
     let file = File::open(&args.source)?;
     let reader = BufReader::new(file);
     read_lines(reader, &args, planes)

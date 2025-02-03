@@ -3,7 +3,7 @@ use squitterator::{
 };
 
 use clap::Parser;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 fn main() -> AppResult<()> {
     let args = Args::parse();
@@ -16,7 +16,7 @@ fn main() -> AppResult<()> {
         set_observer_coords_from_str(coord_str)
     };
 
-    let planes = Planes::new();
+    let planes = Arc::new(RwLock::new(Planes::new()));
 
     let reader_thread = spawn_reader_thread(Arc::new(args), planes);
     reader_thread
