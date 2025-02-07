@@ -5,10 +5,10 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.39"
-clap = { version = "4.5.23", features = ["derive"] }
+clap = { version = "4.5.28", features = ["derive"] }
 env_logger = "0.11.6"
 lazy_static = "1.5.0"
-log = "0.4.22"
+log = "0.4.25"
 
 [profile.release]
 panic = "abort"

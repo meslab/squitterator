@@ -73,23 +73,34 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
         }
 
         if !display_flags.quiet() && app_state.is_time_to_refresh(&now, args.update) {
-            clear_screen();
-
-            headers.print_header();
-            headers.print_separator();
-
-            planes.print(args, &display_flags);
-
-            headers.print_separator();
-
-            if args.count_df {
-                app_state.print_df_count_line();
-            }
-
-            app_state.reset_timestamp(now);
+            display_planes(args, planes, &display_flags, &headers, &mut app_state, now);
         }
     }
     Ok(())
+}
+
+fn display_planes(
+    args: &Args,
+    planes: &mut Planes,
+    display_flags: &DisplayFlags,
+    headers: &LegendHeaders,
+    app_state: &mut AppCounters,
+    now: chrono::DateTime<chrono::Utc>,
+) {
+    clear_screen();
+
+    headers.print_header();
+    headers.print_separator();
+
+    planes.print(args, display_flags);
+
+    headers.print_separator();
+
+    if args.count_df {
+        app_state.print_df_count_line();
+    }
+
+    app_state.reset_timestamp(now);
 }
 
 pub fn spawn_reader_thread(args: Arc<Args>, mut planes: Planes) -> thread::JoinHandle<Result<()>> {
