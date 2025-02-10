@@ -45,7 +45,7 @@ pub fn get_icao(message: &[u32], df: u32) -> Option<u32> {
 ///
 /// The calculated Wake Turbulence Category (WTC) as a character.
 ///
-pub(crate) fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
+pub(crate) fn get_wake_turbulence_category(vc: &(u32, u32)) -> Option<char> {
     match vc {
         (4, 1) => Some('L'),
         (4, 2) => Some('S'),
@@ -90,7 +90,7 @@ mod tests {
     }
 
     #[test]
-    fn test_icao_wtc() {
+    fn test_get_wake_turbulence_category() {
         let vcs = [
             ((4, 1), 'L'),
             ((4, 2), 'S'),
@@ -101,18 +101,23 @@ mod tests {
         ];
 
         for (vc, value) in vcs.iter() {
-            if let Some(result) = crate::decoder::icao_wtc(vc) {
+            if let Some(result) = crate::decoder::get_wake_turbulence_category(vc) {
                 assert_eq!(result, *value, "VC: {:?}", vc);
             }
         }
     }
 
     #[test]
-    fn test_icao_wtc_none() {
+    fn test_get_wake_turbulence_category_none() {
         let vcs = [(4, 0), (4, 6)];
 
         for vc in vcs.iter() {
-            assert_eq!(crate::decoder::icao_wtc(vc), None, "VC: {:?}", vc);
+            assert_eq!(
+                crate::decoder::get_wake_turbulence_category(vc),
+                None,
+                "VC: {:?}",
+                vc
+            );
         }
     }
 }
