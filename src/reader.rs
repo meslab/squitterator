@@ -1,6 +1,6 @@
 use crate::{
-    get_downlink_format, get_message, icao, AppCounters, Args, DisplayFlags, Downlink, Legend, LegendHeaders,
-    Planes, DF,
+    get_downlink_format, get_message, icao, AppCounters, Args, DisplayFlags, Downlink, Legend,
+    LegendHeaders, Planes, DF,
 };
 use log::{debug, error, info};
 use std::{
