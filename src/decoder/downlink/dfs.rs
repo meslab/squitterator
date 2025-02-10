@@ -1,4 +1,11 @@
-use std::fmt::{self, Debug, Display};
+use std::{
+    fmt::{self, Debug, Display},
+    fs::File,
+    io::Write,
+    sync::Mutex,
+};
+
+use log::debug;
 
 use super::{df, Ext, Mds, Srt};
 
@@ -27,6 +34,17 @@ impl Display for DF {
             DF::EXT(v) => write!(f, "{}", v),
             DF::MDS(v) => write!(f, "{}", v),
         }
+    }
+}
+
+impl DF {
+    pub fn log(&self, downlink_error_log_file: &Mutex<File>) -> Result<(), std::io::Error> {
+        let mut downlink_error_log_file = downlink_error_log_file
+            .lock()
+            .expect("Cannot open downlink error log file.");
+        write!(downlink_error_log_file, "{}", self)?;
+        debug!("Writing to {:?}", &downlink_error_log_file);
+        Ok(())
     }
 }
 

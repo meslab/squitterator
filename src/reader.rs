@@ -4,7 +4,7 @@ use crate::{
 use log::{debug, error, info};
 use std::{
     fs::File,
-    io::{BufRead, BufReader, Result, Write},
+    io::{BufRead, BufReader, Result},
     net::TcpStream,
     sync::{Arc, Mutex},
     thread::{self, sleep},
@@ -63,10 +63,8 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
 
         let now = chrono::Utc::now();
         if let Ok(downlink) = DF::from_message(&message) {
-            if let Some(ref dlf) = downlink_error_log_file {
-                let mut dlf = dlf.lock().expect("Cannot open downlink error log file.");
-                write!(dlf, "{}", downlink)?;
-                debug!("Writing to {:?}", &dlf);
+            if let Some(ref downlink_error_log_file) = downlink_error_log_file {
+                downlink.log(downlink_error_log_file)?;
             }
             planes.update_aircraft(&downlink, &message, df, icao, args);
             planes.cleanup(&mut app_state, now);
