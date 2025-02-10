@@ -7,7 +7,7 @@ mod reader;
 
 pub use arguments::Args;
 pub use decoder::{
-    df, get_message, icao, set_observer_coords_from_str, DisplayFlags, Downlink, Legend,
+    get_downlink_format, get_message, icao, set_observer_coords_from_str, DisplayFlags, Downlink, Legend,
     LegendHeaders, Plane, Planes, UpdateFromDownlink, DF,
 };
 pub use errors::AppResult;

@@ -22,15 +22,15 @@ use crate::range_value;
 /// # Examples
 ///
 /// ```
-/// use squitterator::{get_message, df};
+/// use squitterator::{get_message, get_downlink_format};
 /// let squitter = "8D40621D58C382D690C8AC2863A7";
 /// if let Some(message) = get_message(squitter) {
-///     if let Some(df) = df(&message) {
+///     if let Some(df) = get_downlink_format(&message) {
 ///         assert_eq!(df, 17);
 ///     }
 /// }
 /// ```
-pub fn df(message: &[u32]) -> Option<u32> {
+pub fn get_downlink_format(message: &[u32]) -> Option<u32> {
     range_value(message, 1, 5)
 }
 
@@ -43,7 +43,7 @@ mod tests {
     fn test_df_17() {
         let squitter = "8D40621D58C382D690C8AC2863A7";
         if let Some(message) = get_message(squitter) {
-            let result = df(&message).unwrap_or(0);
+            let result = get_downlink_format(&message).unwrap_or(0);
             assert_eq!(result, 17);
         }
     }
@@ -52,7 +52,7 @@ mod tests {
     fn test_df_21() {
         let squitter = "A8281200200464B3CF7820CD194C";
         if let Some(message) = get_message(squitter) {
-            let result = df(&message).unwrap_or(0);
+            let result = get_downlink_format(&message).unwrap_or(0);
             assert_eq!(result, 21);
         }
     }
@@ -61,7 +61,7 @@ mod tests {
     fn test_df_22() {
         let squitter = "A020100A10020A80F000004F24AF";
         if let Some(message) = get_message(squitter) {
-            let result = df(&message).unwrap_or(0);
+            let result = get_downlink_format(&message).unwrap_or(0);
             assert_eq!(result, 20);
         }
     }

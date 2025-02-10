@@ -14,9 +14,9 @@ use crate::decoder::get_crc;
 /// # Examples
 ///
 /// ```
-/// use squitterator::{get_message, df, icao};
+/// use squitterator::{get_message, get_downlink_format, icao};
 /// if let Some(message) = get_message("A0001838300000000000007ADA59") {
-///     if let Some(df) = df(&message) {
+///     if let Some(df) = get_downlink_format(&message) {
 ///         if let Some(icao_address) = icao(&message, df) {
 ///             assert_eq!(icao_address, 7453696);
 ///         }
@@ -59,7 +59,7 @@ pub(crate) fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
 
 #[cfg(test)]
 mod tests {
-    use crate::decoder::{df, get_message, icao};
+    use crate::decoder::{get_downlink_format, get_message, icao};
 
     #[test]
     fn test_icao() {
@@ -80,7 +80,7 @@ mod tests {
 
         for (squitter, value) in squitters.iter() {
             if let Some(message) = get_message(squitter) {
-                if let Some(df) = df(&message) {
+                if let Some(df) = get_downlink_format(&message) {
                     if let Some(result) = icao(&message, df) {
                         assert_eq!(result, *value, "Squitter: {} ICAO:{:X}", squitter, result);
                     }

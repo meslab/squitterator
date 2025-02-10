@@ -63,7 +63,7 @@ pub fn is_bds_4_4(message: &[u32]) -> Option<Meteo> {
         );
         debug!(
             "DF:{} F:{:b} {:?}",
-            decoder::df(message)?,
+            decoder::get_downlink_format(message)?,
             decoder::range_value(message, 33, 36)?,
             meteo
         );

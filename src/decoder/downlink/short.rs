@@ -66,7 +66,7 @@ impl decoder::Downlink for Srt {
     }
 
     fn update(&mut self, message: &[u32]) {
-        if let Some(df) = decoder::df(message) {
+        if let Some(df) = decoder::get_downlink_format(message) {
             self.df = Some(df);
             self.icao = decoder::icao(message, df);
             match df {

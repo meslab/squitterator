@@ -7,7 +7,7 @@ use std::{
 
 use log::debug;
 
-use super::{df, Ext, Mds, Srt};
+use super::{get_downlink_format, Ext, Mds, Srt};
 
 #[derive(Debug)]
 pub enum DF {
@@ -50,7 +50,7 @@ impl DF {
 
 impl Downlink for DF {
     fn from_get_message(message: &[u32]) -> Result<Self, &str> {
-        match df(message) {
+        match get_downlink_format(message) {
             Some(value) => {
                 let dl = match value {
                     0..=16 => DF::SRT(Srt::from_get_message(message)?),

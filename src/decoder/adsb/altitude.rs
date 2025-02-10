@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn test_alt() {
         if let Some(message) = decoder::get_message("A8281200200464B3CF7820CD194C") {
-            let df = decoder::df(&message).expect("Failed to get downlink format");
+            let df = decoder::get_downlink_format(&message).expect("Failed to get downlink format");
             let result = altitude(&message, df);
             assert_eq!(result, Some(14300));
         }
@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn test_alt_e() {
         if let Some(message) = decoder::get_message("A020100A10020A80F000004F24AF") {
-            let df = decoder::df(&message).expect("Failed to get downlink format");
+            let df = decoder::get_downlink_format(&message).expect("Failed to get downlink format");
             let result = altitude(&message, df);
             assert_eq!(result, None);
         }

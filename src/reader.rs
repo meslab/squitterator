@@ -1,5 +1,5 @@
 use crate::{
-    df, get_message, icao, AppCounters, Args, DisplayFlags, Downlink, Legend, LegendHeaders,
+    get_downlink_format, get_message, icao, AppCounters, Args, DisplayFlags, Downlink, Legend, LegendHeaders,
     Planes, DF,
 };
 use log::{debug, error, info};
@@ -36,7 +36,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
             continue;
         };
 
-        let Some(df) = df(&message) else {
+        let Some(df) = get_downlink_format(&message) else {
             continue;
         };
 
