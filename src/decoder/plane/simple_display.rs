@@ -21,7 +21,7 @@ impl SimpleDisplay for Plane {
         } else {
             write!(f, " ")?;
         }
-        if let Some(w) = decoder::icao_wtc(&self.category) {
+        if let Some(w) = decoder::get_wake_turbulence_category(&self.category) {
             write!(f, "{} ", w)?;
         } else {
             write!(f, "  ")?;

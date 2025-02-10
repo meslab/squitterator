@@ -14,15 +14,15 @@ use crate::decoder::get_crc;
 /// # Examples
 ///
 /// ```
-/// use squitterator::{get_message, get_downlink_format, icao};
+/// use squitterator::{get_message, get_downlink_format, get_icao};
 /// if let Some(message) = get_message("A0001838300000000000007ADA59") {
 ///     if let Some(df) = get_downlink_format(&message) {
-///         if let Some(icao_address) = icao(&message, df) {
+///         if let Some(icao_address) = get_icao(&message, df) {
 ///             assert_eq!(icao_address, 7453696);
 ///         }
 ///     }
 /// }
-pub fn icao(message: &[u32], df: u32) -> Option<u32> {
+pub fn get_icao(message: &[u32], df: u32) -> Option<u32> {
     match df {
         0 | 4 | 5 | 16 | 20 | 21 => {
             let len = (message.len() * 4) as u32;
@@ -45,7 +45,7 @@ pub fn icao(message: &[u32], df: u32) -> Option<u32> {
 ///
 /// The calculated Wake Turbulence Category (WTC) as a character.
 ///
-pub(crate) fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
+pub(crate) fn get_wake_turbulence_category(vc: &(u32, u32)) -> Option<char> {
     match vc {
         (4, 1) => Some('L'),
         (4, 2) => Some('S'),
@@ -59,7 +59,7 @@ pub(crate) fn icao_wtc(vc: &(u32, u32)) -> Option<char> {
 
 #[cfg(test)]
 mod tests {
-    use crate::decoder::{get_downlink_format, get_message, icao};
+    use crate::decoder::{get_downlink_format, get_icao, get_message};
 
     #[test]
     fn test_icao() {
@@ -81,7 +81,7 @@ mod tests {
         for (squitter, value) in squitters.iter() {
             if let Some(message) = get_message(squitter) {
                 if let Some(df) = get_downlink_format(&message) {
-                    if let Some(result) = icao(&message, df) {
+                    if let Some(result) = get_icao(&message, df) {
                         assert_eq!(result, *value, "Squitter: {} ICAO:{:X}", squitter, result);
                     }
                 }
@@ -90,7 +90,7 @@ mod tests {
     }
 
     #[test]
-    fn test_icao_wtc() {
+    fn test_get_wake_turbulence_category() {
         let vcs = [
             ((4, 1), 'L'),
             ((4, 2), 'S'),
@@ -101,18 +101,23 @@ mod tests {
         ];
 
         for (vc, value) in vcs.iter() {
-            if let Some(result) = crate::decoder::icao_wtc(vc) {
+            if let Some(result) = crate::decoder::get_wake_turbulence_category(vc) {
                 assert_eq!(result, *value, "VC: {:?}", vc);
             }
         }
     }
 
     #[test]
-    fn test_icao_wtc_none() {
+    fn test_get_wake_turbulence_category_none() {
         let vcs = [(4, 0), (4, 6)];
 
         for vc in vcs.iter() {
-            assert_eq!(crate::decoder::icao_wtc(vc), None, "VC: {:?}", vc);
+            assert_eq!(
+                crate::decoder::get_wake_turbulence_category(vc),
+                None,
+                "VC: {:?}",
+                vc
+            );
         }
     }
 }

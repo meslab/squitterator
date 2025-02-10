@@ -9,13 +9,13 @@ mod surveillance_status;
 mod version;
 mod vertical_rate;
 
-pub use icao::icao;
+pub use icao::get_icao;
 
 pub(crate) use acas::threat_encounter;
 pub(crate) use ais::ais;
 pub(crate) use altitude::{altitude, altitude_delta, altitude_gnss};
 pub(crate) use ground_movement::ground_movement;
-pub(crate) use icao::icao_wtc;
+pub(crate) use icao::get_wake_turbulence_category;
 pub(crate) use position::{cpr, cpr_location};
 pub(crate) use squawk::squawk;
 pub(crate) use surveillance_status::surveillance_status;
