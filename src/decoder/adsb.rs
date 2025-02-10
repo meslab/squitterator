@@ -9,7 +9,7 @@ mod surveillance_status;
 mod version;
 mod vertical_rate;
 
-pub use icao::icao;
+pub use icao::get_icao;
 
 pub(crate) use acas::threat_encounter;
 pub(crate) use ais::ais;

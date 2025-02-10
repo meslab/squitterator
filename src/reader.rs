@@ -1,5 +1,5 @@
 use crate::{
-    get_downlink_format, get_message, icao, AppCounters, Args, DisplayFlags, Downlink, Legend,
+    get_downlink_format, get_icao, get_message, AppCounters, Args, DisplayFlags, Downlink, Legend,
     LegendHeaders, Planes, DF,
 };
 use log::{debug, error, info};
@@ -21,10 +21,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
     let display_flags = DisplayFlags::from_arg_str(&args.display.concat());
 
     if !display_flags.quiet() {
-        clear_screen();
-
-        let legend = Legend::from_display_flags(&display_flags);
-        legend.print_legend();
+        display_legend(&display_flags);
     }
 
     let headers = LegendHeaders::from_display_flags(&display_flags);
@@ -42,7 +39,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
 
         debug!("DF:{}, L:{}", df, &line);
 
-        let Some(icao) = icao(&message, df) else {
+        let Some(icao) = get_icao(&message, df) else {
             continue;
         };
 
@@ -76,6 +73,13 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
         }
     }
     Ok(())
+}
+
+fn display_legend(display_flags: &DisplayFlags) {
+    clear_screen();
+
+    let legend = Legend::from_display_flags(display_flags);
+    legend.print_legend();
 }
 
 fn display_planes(

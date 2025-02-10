@@ -102,7 +102,7 @@ impl decoder::Downlink for Mds {
     fn update(&mut self, message: &[u32]) {
         if let Some(df) = decoder::get_downlink_format(message) {
             self.df = Some(df);
-            self.icao = decoder::icao(message, df);
+            self.icao = decoder::get_icao(message, df);
             self.altitude = decoder::altitude(message, df);
         }
 
