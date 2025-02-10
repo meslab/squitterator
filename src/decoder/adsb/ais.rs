@@ -46,12 +46,12 @@ pub(crate) fn ais(message: &[u32]) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::decoder::message;
+    use crate::decoder::get_message;
 
     #[test]
     fn test_ais() {
         let squitter = "8DAAAA9225041331DF3820CAC7A4";
-        if let Some(message) = message(squitter) {
+        if let Some(message) = get_message(squitter) {
             if let Some(result) = ais(&message) {
                 assert_eq!(result, "AAL173");
             }
@@ -66,7 +66,7 @@ mod tests {
         ];
 
         for (squitter, value) in squitters.iter() {
-            if let Some(message) = message(squitter) {
+            if let Some(message) = get_message(squitter) {
                 let result = ais(&message);
                 match result {
                     Some(r) => assert_eq!(r.as_str(), *value, "{}", squitter),

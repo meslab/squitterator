@@ -44,7 +44,7 @@ mod tests {
 
     #[test]
     fn test_track_and_groundspeed() {
-        if let Some(message) = decoder::message("8DC06A75990D0628B0040C8AA788") {
+        if let Some(message) = decoder::get_message("8DC06A75990D0628B0040C8AA788") {
             if let (Some(track), Some(groundspeed)) = track_and_groundspeed(&message, false) {
                 assert_eq!(groundspeed, 416);
                 assert_eq!(track, 321);

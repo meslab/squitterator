@@ -23,7 +23,7 @@ pub(crate) fn squawk(message: &[u32]) -> Option<u32> {
 
 #[cfg(test)]
 mod tests {
-    use crate::decoder::{message, squawk};
+    use crate::decoder::{get_message, squawk};
 
     #[test]
     fn test_squawk() {
@@ -40,7 +40,7 @@ mod tests {
         ];
 
         for (squitter, value) in squitters.iter() {
-            if let Some(message) = message(squitter) {
+            if let Some(message) = get_message(squitter) {
                 let result = squawk(&message);
                 assert_eq!(result, Some(*value));
             }

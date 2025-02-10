@@ -17,7 +17,7 @@ mod tests {
     #[test]
     fn test_threat_encounter() {
         let squitter = "8D40621D58C382D690C8AC2863A7";
-        if let Some(message) = decoder::message(squitter) {
+        if let Some(message) = decoder::get_message(squitter) {
             assert_eq!(threat_encounter(&message), Some('\u{2072}'));
         }
     }

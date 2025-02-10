@@ -24,7 +24,7 @@ pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
                 "DF:{} C:{:b} M:{} ALT:{}",
                 df,
                 code?,
-                crate::decoder::hex_message(message),
+                crate::decoder::get_hex_message(message),
                 a
             );
             None
@@ -61,7 +61,7 @@ mod tests {
 
     #[test]
     fn test_alt() {
-        if let Some(message) = decoder::message("A8281200200464B3CF7820CD194C") {
+        if let Some(message) = decoder::get_message("A8281200200464B3CF7820CD194C") {
             let df = decoder::df(&message).expect("Failed to get downlink format");
             let result = altitude(&message, df);
             assert_eq!(result, Some(14300));
@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn test_alt_e() {
-        if let Some(message) = decoder::message("A020100A10020A80F000004F24AF") {
+        if let Some(message) = decoder::get_message("A020100A10020A80F000004F24AF") {
             let df = decoder::df(&message).expect("Failed to get downlink format");
             let result = altitude(&message, df);
             assert_eq!(result, None);

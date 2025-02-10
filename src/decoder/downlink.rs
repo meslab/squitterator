@@ -22,9 +22,9 @@ use crate::range_value;
 /// # Examples
 ///
 /// ```
-/// use squitterator::{message, df};
+/// use squitterator::{get_message, df};
 /// let squitter = "8D40621D58C382D690C8AC2863A7";
-/// if let Some(message) = message(squitter) {
+/// if let Some(message) = get_message(squitter) {
 ///     if let Some(df) = df(&message) {
 ///         assert_eq!(df, 17);
 ///     }
@@ -37,12 +37,12 @@ pub fn df(message: &[u32]) -> Option<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::decoder::message;
+    use crate::decoder::get_message;
 
     #[test]
     fn test_df_17() {
         let squitter = "8D40621D58C382D690C8AC2863A7";
-        if let Some(message) = message(squitter) {
+        if let Some(message) = get_message(squitter) {
             let result = df(&message).unwrap_or(0);
             assert_eq!(result, 17);
         }
@@ -51,7 +51,7 @@ mod tests {
     #[test]
     fn test_df_21() {
         let squitter = "A8281200200464B3CF7820CD194C";
-        if let Some(message) = message(squitter) {
+        if let Some(message) = get_message(squitter) {
             let result = df(&message).unwrap_or(0);
             assert_eq!(result, 21);
         }
@@ -60,7 +60,7 @@ mod tests {
     #[test]
     fn test_df_22() {
         let squitter = "A020100A10020A80F000004F24AF";
-        if let Some(message) = message(squitter) {
+        if let Some(message) = get_message(squitter) {
             let result = df(&message).unwrap_or(0);
             assert_eq!(result, 20);
         }

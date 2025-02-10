@@ -5,7 +5,7 @@ use crate::decoder;
 
 impl Plane {
     pub(super) fn update_from_ext(&mut self, message: &[u32], df: u32) {
-        let (message_type, message_subtype) = decoder::message_type(message);
+        let (message_type, message_subtype) = decoder::get_message_type(message);
         self.last_type_code = message_type;
         debug!("DF:{}, TC:{}, ST:{}", df, message_type, message_subtype);
         match message_type {

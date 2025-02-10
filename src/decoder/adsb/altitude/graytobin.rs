@@ -56,7 +56,7 @@ mod tests {
 
     #[test]
     fn test_graytobin() {
-        if let Some(message) = decoder::message("A8281200200464B3CF7820CD194C") {
+        if let Some(message) = decoder::get_message("A8281200200464B3CF7820CD194C") {
             let (high, low) = graytobin(&message);
             assert_eq!(high, 31);
             assert_eq!(low, 0);
@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn test_graytobin_e() {
-        if let Some(message) = decoder::message("A020100A10020A80F000004F24AF") {
+        if let Some(message) = decoder::get_message("A020100A10020A80F000004F24AF") {
             let (high, low) = graytobin(&message);
             assert_eq!(high, 2);
             assert_eq!(low, 0);

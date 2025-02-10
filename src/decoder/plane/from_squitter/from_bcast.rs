@@ -12,7 +12,7 @@ impl Plane {
         }
 
         if df == 11 || df == 17 {
-            self.capability.0 = decoder::ca(message);
+            self.capability.0 = decoder::get_capability(message);
         }
     }
 }

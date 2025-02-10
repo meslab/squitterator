@@ -93,7 +93,7 @@ impl Display for Mds {
 }
 
 impl decoder::Downlink for Mds {
-    fn from_message(message: &[u32]) -> Result<Self, &str> {
+    fn from_get_message(message: &[u32]) -> Result<Self, &str> {
         let mut dl = Mds::new();
         dl.update(message);
         Ok(dl)

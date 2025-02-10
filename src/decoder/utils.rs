@@ -10,8 +10,6 @@ pub(crate) use format::*;
 pub(crate) use ma_code::*;
 pub(crate) use me_code::*;
 
-use log::debug;
-
 /// Converts a squitter string into a vector of u32 values.
 ///
 /// # Arguments
@@ -21,17 +19,13 @@ use log::debug;
 /// # Returns
 ///
 /// * `Option<Vec<u32>>` - An Option vector of u32 values representing the converted squitter string.
-pub fn message(squitter: &str) -> Option<Vec<u32>> {
+pub fn get_message(squitter: &str) -> Option<Vec<u32>> {
     clean_squitter(squitter)
         .filter(|message| matches!(message.len(), 14 | 28))
         .filter(|message| reminder(message) == 0)
-        .map(|message| {
-            debug!("Message: {:?}", message);
-            message
-        })
 }
 
-pub(crate) fn hex_message(message: &[u32]) -> String {
+pub(crate) fn get_hex_message(message: &[u32]) -> String {
     message
         .iter()
         .map(|x| format!("{:X}", x))
@@ -39,17 +33,7 @@ pub(crate) fn hex_message(message: &[u32]) -> String {
         .join("")
 }
 
-/// Retrieves the message type and subtype from a message.
-///
-/// # Arguments
-///
-/// * `message` - The message to extract the message type and subtype from.
-///
-/// # Returns
-///
-/// A tuple containing the message type and subtype.
-///
-pub(crate) fn message_type(message: &[u32]) -> (u32, u32) {
+pub(crate) fn get_message_type(message: &[u32]) -> (u32, u32) {
     ((message[8] << 1) | (message[9] >> 3), message[9] & 7)
 }
 
@@ -62,7 +46,7 @@ pub(crate) fn message_type(message: &[u32]) -> (u32, u32) {
 /// # Returns
 ///     
 /// The CA value.
-pub(crate) fn ca(message: &[u32]) -> u32 {
+pub(crate) fn get_capability(message: &[u32]) -> u32 {
     message[1] & 0b0111
 }
 
@@ -71,9 +55,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_message() {
+    fn test_get_message() {
         let squitter = "8D40621D58C382D690C8AC2863A7";
-        match message(squitter) {
+        match get_message(squitter) {
             Some(message) => assert_eq!(
                 message,
                 vec![
@@ -88,7 +72,7 @@ mod tests {
     #[test]
     fn test_message_short() {
         let squitter = "02E197B00179C3";
-        match message(squitter) {
+        match get_message(squitter) {
             Some(message) => assert_eq!(message, vec![0, 2, 14, 1, 9, 7, 11, 0, 0, 1, 7, 9, 12, 3]),
             None => panic!("Failed to convert squitter to message"),
         }
@@ -97,24 +81,24 @@ mod tests {
     //#[test]
     //fn test_ic() {
     //    let squitter = "8D40621D58C382D690C8AC2863A7";
-    //    if let Some(message) = message(squitter) {
+    //    if let Some(message) = get_message(squitter) {
     //        assert_eq!(ic(&message), 8);
     //    }
     //}
 
     #[test]
-    fn test_ca() {
+    fn test_get_capability() {
         let squitter = "8D40621D58C382D690C8AC2863A7";
-        if let Some(message) = message(squitter) {
-            assert_eq!(ca(&message), 5);
+        if let Some(message) = get_message(squitter) {
+            assert_eq!(get_capability(&message), 5);
         }
     }
 
     #[test]
     fn test_message_type() {
         let squitter = "8D40621D58C382D690C8AC2863A7";
-        if let Some(message) = message(squitter) {
-            let (message_type, message_subtype) = message_type(&message);
+        if let Some(message) = get_message(squitter) {
+            let (message_type, message_subtype) = get_message_type(&message);
             assert_eq!(message_type, 11);
             assert_eq!(message_subtype, 0);
         }

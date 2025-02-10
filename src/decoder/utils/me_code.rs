@@ -17,7 +17,7 @@ pub(crate) fn me_code(message: &[u32]) -> Option<u16> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::decoder::message;
+    use crate::decoder::get_message;
 
     #[test]
     fn test_me_code() {
@@ -33,7 +33,7 @@ mod tests {
         ];
 
         for (squitter, value) in squitters.iter() {
-            if let Some(message) = message(squitter) {
+            if let Some(message) = get_message(squitter) {
                 let result = me_code(&message);
                 assert_eq!(result, Some(*value));
             }
@@ -43,7 +43,7 @@ mod tests {
     #[test]
     fn test_me_code_invalid_hex() {
         let squitter = "8D40621D58C382D690C8AC2863A7";
-        if let Some(message) = message(squitter) {
+        if let Some(message) = get_message(squitter) {
             let result = me_code(&message);
             assert_eq!(result, Some(12513));
         }
