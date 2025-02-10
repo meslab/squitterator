@@ -7,7 +7,7 @@ use std::{
 
 use log::debug;
 
-use super::{df, Ext, Mds, Srt};
+use super::{get_downlink_format, Ext, Mds, Srt};
 
 #[derive(Debug)]
 pub enum DF {
@@ -49,13 +49,13 @@ impl DF {
 }
 
 impl Downlink for DF {
-    fn from_message(message: &[u32]) -> Result<Self, &str> {
-        match df(message) {
+    fn from_get_message(message: &[u32]) -> Result<Self, &str> {
+        match get_downlink_format(message) {
             Some(value) => {
                 let dl = match value {
-                    0..=16 => DF::SRT(Srt::from_message(message)?),
-                    17 => DF::EXT(Ext::from_message(message)?),
-                    20 | 21 => DF::MDS(Mds::from_message(message)?),
+                    0..=16 => DF::SRT(Srt::from_get_message(message)?),
+                    17 => DF::EXT(Ext::from_get_message(message)?),
+                    20 | 21 => DF::MDS(Mds::from_get_message(message)?),
                     _ => DF::SRT(Srt::new()),
                 };
                 Ok(dl)
@@ -82,7 +82,7 @@ impl Downlink for DF {
 }
 
 pub trait Downlink: Sized {
-    fn from_message(message: &[u32]) -> Result<Self, &str>;
+    fn from_get_message(message: &[u32]) -> Result<Self, &str>;
     fn update(&mut self, message: &[u32]);
     fn icao(&self) -> Option<u32>;
 }

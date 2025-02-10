@@ -118,7 +118,7 @@ impl Plane {
         }
     }
 
-    pub fn from_message(message: &[u32], df: u32, icao: u32, relaxed: bool) -> Self {
+    pub fn from_get_message(message: &[u32], df: u32, icao: u32, relaxed: bool) -> Self {
         let mut plane = Plane::new();
         plane.icao = icao;
         (_, plane.reg) = super::icao_to_country(icao);

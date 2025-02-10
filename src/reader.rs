@@ -1,5 +1,6 @@
 use crate::{
-    df, icao, message, AppCounters, Args, DisplayFlags, Downlink, Legend, LegendHeaders, Planes, DF,
+    get_downlink_format, get_message, icao, AppCounters, Args, DisplayFlags, Downlink, Legend,
+    LegendHeaders, Planes, DF,
 };
 use log::{debug, error, info};
 use std::{
@@ -31,11 +32,11 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
     let mut app_state = AppCounters::from_update_interval(args.update);
 
     for line in reader.lines().map_while(Result::ok) {
-        let Some(message) = message(&line) else {
+        let Some(message) = get_message(&line) else {
             continue;
         };
 
-        let Some(df) = df(&message) else {
+        let Some(df) = get_downlink_format(&message) else {
             continue;
         };
 
@@ -62,7 +63,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
         }
 
         let now = chrono::Utc::now();
-        if let Ok(downlink) = DF::from_message(&message) {
+        if let Ok(downlink) = DF::from_get_message(&message) {
             if let Some(ref downlink_error_log_file) = downlink_error_log_file {
                 downlink.log(downlink_error_log_file)?;
             }

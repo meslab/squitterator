@@ -55,18 +55,18 @@ impl Ext {
 }
 
 impl decoder::Downlink for Ext {
-    fn from_message(message: &[u32]) -> Result<Self, &str> {
+    fn from_get_message(message: &[u32]) -> Result<Self, &str> {
         let mut dl = Ext::new();
         dl.update(message);
         Ok(dl)
     }
 
     fn update(&mut self, message: &[u32]) {
-        if let Some(df) = decoder::df(message) {
+        if let Some(df) = decoder::get_downlink_format(message) {
             self.df = Some(df);
             self.icao = decoder::icao(message, df);
-            self.capability = decoder::ca(message);
-            self.message_type = decoder::message_type(message);
+            self.capability = decoder::get_capability(message);
+            self.message_type = decoder::get_message_type(message);
             match self.message_type.0 {
                 1..=4 => {
                     self.update_mt_1_4(message);

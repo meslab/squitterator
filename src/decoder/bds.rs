@@ -58,12 +58,12 @@ pub(crate) fn goodflags(message: &[u32], flag: u32, sb: u32, eb: u32) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::decoder::message;
+    use crate::decoder::get_message;
 
     #[test]
     fn test_bds() {
         let squitter = "8D40621D58C382D690C8AC2863A7";
-        if let Some(message) = message(squitter) {
+        if let Some(message) = get_message(squitter) {
             assert_eq!(bds(&message), (0, 0));
         }
     }
@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn test_bds_21() {
         let squitter = "A8000096300000000000007F5EBC";
-        if let Some(message) = message(squitter) {
+        if let Some(message) = get_message(squitter) {
             assert_eq!(bds(&message), (3, 0));
         }
     }

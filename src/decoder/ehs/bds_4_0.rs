@@ -1,9 +1,9 @@
 use log::debug;
 
-use crate::decoder::{flag_and_range_value, hex_message};
+use crate::decoder::{flag_and_range_value, get_hex_message};
 
 pub(crate) fn mcp_selected_altitude(message: &[u32]) -> Option<u32> {
-    debug!("MCP, {}", hex_message(message));
+    debug!("MCP, {}", get_hex_message(message));
     flag_and_range_value(message, 33, 34, 45)
         .filter(|&f| f.0 == 1)
         .map(|v| v.1 << 4)
@@ -36,7 +36,7 @@ pub(crate) fn target_altitude_source(message: &[u32]) -> Option<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::decoder::message;
+    use crate::decoder::get_message;
     #[test]
     fn test_mcp_selected_altitude_value() {
         let s = [
@@ -45,7 +45,7 @@ mod tests {
             ("A80004BAB8AE4270A80000823C66", 29008),
         ];
         for (squitter, value) in s.iter() {
-            if let Some(message) = message(squitter) {
+            if let Some(message) = get_message(squitter) {
                 assert_eq!(mcp_selected_altitude(&message), Some(*value as u32));
             }
         }
@@ -59,7 +59,7 @@ mod tests {
             ("A80004BAB8AE4270A80000823C66", 37008),
         ];
         for (squitter, value) in s.iter() {
-            if let Some(message) = message(squitter) {
+            if let Some(message) = get_message(squitter) {
                 assert_eq!(fms_selected_altitude(&message), Some(*value as u32));
             }
         }

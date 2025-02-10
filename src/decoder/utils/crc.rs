@@ -108,7 +108,7 @@ mod tests {
         ];
 
         for (squitter, value) in squitters.iter() {
-            if let Some(message) = message(squitter) {
+            if let Some(message) = get_message(squitter) {
                 let result = crc112(&message);
                 assert_eq!(result, *value);
             }
@@ -131,7 +131,7 @@ mod tests {
         ];
 
         for (squitter, value) in squitters.iter() {
-            if let Some(message) = message(squitter) {
+            if let Some(message) = get_message(squitter) {
                 let result = crc56(&message);
                 assert_eq!(result, *value);
             }
@@ -147,7 +147,7 @@ mod tests {
         ];
 
         for (squitter, value) in squitters.iter() {
-            if let Some(message) = message(squitter) {
+            if let Some(message) = get_message(squitter) {
                 let result = reminder(&message);
                 assert_eq!(result, *value);
             }
