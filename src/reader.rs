@@ -60,7 +60,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
         }
 
         let now = chrono::Utc::now();
-        if let Ok(downlink) = DF::from_get_message(&message) {
+        if let Ok(downlink) = DF::from_message(&message) {
             if let Some(ref downlink_error_log_file) = downlink_error_log_file {
                 downlink.log(downlink_error_log_file)?;
             }

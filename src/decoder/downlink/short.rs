@@ -59,7 +59,7 @@ impl Display for Srt {
 }
 
 impl decoder::Downlink for Srt {
-    fn from_get_message(message: &[u32]) -> Result<Self, &str> {
+    fn from_message(message: &[u32]) -> Result<Self, &str> {
         let mut dl = Srt::new();
         dl.update(message);
         Ok(dl)
