@@ -9,16 +9,16 @@ pub(crate) fn range_value(message: &[u32], sb: u32, eb: u32) -> Option<u32> {
     let result = match eb_ibyte - sb_ibyte {
         0 => (message[sb_ibyte] & (0xF >> sb_ibit)) >> (3 - eb_ibit),
         1 => {
-            (message[sb_ibyte] & (0xF >> sb_ibit)) << (eb_ibit + 1)
+            ((message[sb_ibyte] & (0xF >> sb_ibit)) << (eb_ibit + 1))
                 | (message[eb_ibyte] >> (3 - eb_ibit))
         }
         _ => {
-            message[sb_ibyte + 1..eb_ibyte]
+            (message[sb_ibyte + 1..eb_ibyte]
                 .iter()
                 .fold(message[sb_ibyte] & (0xF >> sb_ibit), |a, x| {
-                    a << 4 | x & 0xF
+                    (a << 4) | x & 0xF
                 })
-                << (eb_ibit + 1)
+                << (eb_ibit + 1))
                 | (message[eb_ibyte] >> (3 - eb_ibit))
         }
     };

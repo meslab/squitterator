@@ -1,4 +1,4 @@
-use super::{header::DisplayFlags, Plane};
+use super::{Plane, header::DisplayFlags};
 use crate::decoder;
 use chrono::Utc;
 use std::fmt;

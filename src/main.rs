@@ -1,5 +1,5 @@
 use squitterator::{
-    initialize_logger, set_observer_coords_from_str, spawn_reader_thread, AppResult, Args, Planes,
+    AppResult, Args, Planes, initialize_logger, set_observer_coords_from_str, spawn_reader_thread,
 };
 
 use clap::Parser;

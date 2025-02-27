@@ -9,8 +9,8 @@ use std::{
 };
 
 use super::{
-    plane::{format_simple_display, DisplayFlags, Plane},
-    UpdateFromDownlink, DF,
+    DF, UpdateFromDownlink,
+    plane::{DisplayFlags, Plane, format_simple_display},
 };
 
 pub struct Planes {
@@ -46,12 +46,17 @@ impl Planes {
         }
     }
 
-    pub(crate) fn cleanup(&mut self, app_state: &mut AppCounters, now: DateTime<Utc>) {
+    pub(crate) fn cleanup(
+        &mut self,
+        app_state: &mut AppCounters,
+        now: DateTime<Utc>,
+        delete_after: i64,
+    ) {
         if let Ok(mut planes) = self.aircrafts.write() {
             if app_state.cleanup_count > 10 {
                 planes.retain(|_, plane| {
                     let elapsed = now.signed_duration_since(plane.timestamp).num_seconds();
-                    if elapsed < 60 {
+                    if elapsed < delete_after {
                         true
                     } else {
                         debug!("Plane {} has been removed from view", plane.icao);

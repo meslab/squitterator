@@ -2,16 +2,16 @@ use crate::decoder;
 
 pub(super) fn graytobin(message: &[u32]) -> (u32, u32) {
     if let Some(code) = decoder::ma_code(message) {
-        let n = ((code >> 4) & 1) << 10
-            | ((code >> 2) & 1) << 9
-            | ((code >> 12) & 1) << 8
-            | ((code >> 10) & 1) << 7
-            | ((code >> 8) & 1) << 6
-            | ((code >> 7) & 1) << 5
-            | ((code >> 5) & 1) << 4
-            | ((code >> 3) & 1) << 3
-            | ((code >> 13) & 1) << 2
-            | ((code >> 11) & 1) << 1
+        let n = (((code >> 4) & 1) << 10)
+            | (((code >> 2) & 1) << 9)
+            | (((code >> 12) & 1) << 8)
+            | (((code >> 10) & 1) << 7)
+            | (((code >> 8) & 1) << 6)
+            | (((code >> 7) & 1) << 5)
+            | (((code >> 5) & 1) << 4)
+            | (((code >> 3) & 1) << 3)
+            | (((code >> 13) & 1) << 2)
+            | (((code >> 11) & 1) << 1)
             | ((code >> 13) & 1);
         let mut mask = 0x80;
         let mut cp = false;

@@ -1,4 +1,4 @@
-use crate::decoder::{plane::from_downlink::UpdateFromDownlink, Mds, Plane};
+use crate::decoder::{Mds, Plane, plane::from_downlink::UpdateFromDownlink};
 
 impl UpdateFromDownlink<Mds> for Plane {
     fn update_from_downlink(&mut self, dl: &Mds) {

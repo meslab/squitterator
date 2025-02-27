@@ -1,4 +1,4 @@
-use crate::decoder::{plane::from_downlink::UpdateFromDownlink, Ext, Plane};
+use crate::decoder::{Ext, Plane, plane::from_downlink::UpdateFromDownlink};
 
 impl UpdateFromDownlink<Ext> for Plane {
     fn update_from_downlink(&mut self, dl: &Ext) {

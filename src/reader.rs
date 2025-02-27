@@ -1,6 +1,6 @@
 use crate::{
-    get_downlink_format, get_icao, get_message, AppCounters, Args, DisplayFlags, Downlink, Legend,
-    LegendHeaders, Planes, DF,
+    AppCounters, Args, DF, DisplayFlags, Downlink, Legend, LegendHeaders, Planes,
+    get_downlink_format, get_icao, get_message,
 };
 use log::{debug, error, info};
 use std::{
@@ -18,7 +18,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
         .as_ref()
         .map(|f| Mutex::new(File::create(f).expect("Unable to create downlink log file")));
 
-    let display_flags = DisplayFlags::from_arg_str(&args.display.concat());
+    let display_flags = DisplayFlags::from_arg_str(&args.display_info.concat());
 
     if !display_flags.quiet() {
         display_legend(&display_flags);
@@ -65,7 +65,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
                 downlink.log(downlink_error_log_file)?;
             }
             planes.update_aircraft(&downlink, &message, df, icao, args);
-            planes.cleanup(&mut app_state, now);
+            planes.cleanup(&mut app_state, now, args.delete_after);
         }
 
         if !display_flags.quiet() && app_state.is_time_to_refresh(&now, args.update) {

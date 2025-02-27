@@ -174,7 +174,7 @@ mod tests {
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
-           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP RLL TAR  TEMP WND WDR HUM PRES TB LC\n"
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP RLL TAR  TEMP WND WDR HUM PRES TB LC\n"
         )
     }
 
@@ -184,7 +184,7 @@ mod tests {
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
-           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB LC\n"
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B VRATE TRK HDG GSP TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB LC\n"
         )
     }
 
@@ -194,7 +194,7 @@ mod tests {
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
-           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB LC\n"
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB LC\n"
         )
     }
 
@@ -204,7 +204,7 @@ mod tests {
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
-           "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB VX DF TC V S PTH LC\n"
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH RLL TAR  TEMP WND WDR HUM PRES TB VX DF TC V S PTH LC\n"
         )
     }
 
@@ -264,7 +264,7 @@ mod tests {
         let headers = LegendHeaders::from_display_flags(&display_flags);
         assert_eq!(
             headers.header,
-             "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH LC\n"
+            "  ICAO RG SQWK W CALLSIGN  LATITUDE   LONGITUDE  DIST ALT B ALT G ALT S BARO VRATE TRK HDG GSP TAS IAS MACH LC\n"
         )
     }
 

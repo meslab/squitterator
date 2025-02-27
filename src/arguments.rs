@@ -12,12 +12,12 @@ pub struct Args {
     pub count_df: bool,
 
     #[clap(
-        short,
+        short = 'i',
         long,
         default_value = "aAews",
         help = "Display plane patameters\na - angles, A - altitude, s - speed\ne - extra info, w - weather\nQ - quiet"
     )]
-    pub display: Vec<String>,
+    pub display_info: Vec<String>,
 
     #[clap(short = 'D', long, default_value = None)]
     pub downlink_log: Option<String>,
@@ -71,6 +71,9 @@ pub struct Args {
 
     #[clap(short, long, default_value = "3")]
     pub update: i64,
+
+    #[clap(short, long, default_value = "60")]
+    pub delete_after: i64,
 
     #[clap(short = 'U', long, help = "Use Plain::update() exclusively")]
     pub use_update_method: bool,

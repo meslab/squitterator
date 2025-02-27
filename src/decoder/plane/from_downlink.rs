@@ -2,7 +2,7 @@ mod from_ext;
 mod from_mds;
 mod from_srt;
 
-use crate::decoder::{Plane, DF};
+use crate::decoder::{DF, Plane};
 
 pub trait UpdateFromDownlink<T> {
     fn update_from_downlink(&mut self, dl: &T);

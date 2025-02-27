@@ -7,7 +7,7 @@ use std::{
 
 use log::debug;
 
-use super::{get_downlink_format, Ext, Mds, Srt};
+use super::{Ext, Mds, Srt, get_downlink_format};
 
 #[derive(Debug)]
 pub enum DF {
