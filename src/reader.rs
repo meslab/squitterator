@@ -2,6 +2,7 @@ use crate::{
     AppCounters, Args, DF, DisplayFlags, Downlink, Legend, LegendHeaders, Planes,
     get_downlink_format, get_icao, get_message,
 };
+use async_std::task;
 use log::{debug, error, info};
 use std::{
     fs::File,
@@ -109,14 +110,14 @@ fn display_planes(
 pub fn spawn_reader_thread(args: Arc<Args>, mut planes: Planes) -> thread::JoinHandle<Result<()>> {
     thread::spawn(move || {
         if !args.tcp.is_empty() {
-            connect_and_read_tcp(args, &mut planes)
+            task::block_on(connect_and_read_tcp(args, &mut planes))
         } else {
             read_from_file(args, &mut planes)
         }
     })
 }
 
-fn connect_and_read_tcp(args: Arc<Args>, planes: &mut Planes) -> Result<()> {
+async fn connect_and_read_tcp(args: Arc<Args>, planes: &mut Planes) -> Result<()> {
     loop {
         match TcpStream::connect(&args.tcp) {
             Ok(stream) => {
