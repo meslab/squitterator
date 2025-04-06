@@ -166,11 +166,11 @@ impl SimpleDisplay for Plane {
                 write!(
                     f,
                     "{:X}",
-                    Utc::now()
+                    (Utc::now()
                         .signed_duration_since(position_timestamp)
                         .num_seconds()
-                        / 10
-                        % 16
+                        / 10)
+                        & 15
                 )?;
             } else {
                 write!(f, " ")?;
@@ -179,11 +179,11 @@ impl SimpleDisplay for Plane {
                 write!(
                     f,
                     "{:X}",
-                    Utc::now()
+                    (Utc::now()
                         .signed_duration_since(track_timestamp)
                         .num_seconds()
-                        / 10
-                        % 16
+                        / 10)
+                        & 15
                 )?;
             } else {
                 write!(f, " ")?;
@@ -192,11 +192,11 @@ impl SimpleDisplay for Plane {
                 write!(
                     f,
                     "{:X} ",
-                    Utc::now()
+                    (Utc::now()
                         .signed_duration_since(heading_timestamp)
                         .num_seconds()
-                        / 10
-                        % 16
+                        / 10)
+                        & 15
                 )?;
             } else {
                 write!(f, "  ")?;

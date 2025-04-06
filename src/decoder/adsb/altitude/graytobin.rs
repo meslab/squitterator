@@ -28,7 +28,7 @@ pub(super) fn graytobin(message: &[u32]) -> (u32, u32) {
 
         let sub = n & 7;
         let high = result >> 3;
-        let low = match high % 2 {
+        let low = match high & 1 {
             0 => match sub {
                 4 => 4,
                 6 => 3,
