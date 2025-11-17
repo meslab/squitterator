@@ -16,16 +16,16 @@ pub enum DF {
     MDS(Mds),
 }
 
-#[derive(Debug)]
-pub struct DownlinkFrame<T: Downlink> {
-    downlink: T,
-}
-
-impl<T: Downlink + Display> Display for DownlinkFrame<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.downlink)
-    }
-}
+//#[derive(Debug)]
+//pub struct DownlinkFrame<T: Downlink> {
+//    downlink: T,
+//}
+//
+//impl<T: Downlink + Display> Display for DownlinkFrame<T> {
+//    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//        write!(f, "{}", self.downlink)
+//    }
+//}
 
 impl Display for DF {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
