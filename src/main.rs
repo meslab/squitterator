@@ -3,24 +3,38 @@ use squitterator::{
 };
 
 use clap::Parser;
+use log::error;
 use std::sync::Arc;
 
 fn main() -> AppResult<()> {
     let args = Arc::new(Args::parse());
 
+    // Initialize error logging if specified
     if let Some(error_log_file) = &args.error_log {
         initialize_logger(error_log_file)?;
-    };
+    }
 
+    // Set observer coordinates if provided
     if let Some(coord_str) = &args.observer_coord {
-        set_observer_coords_from_str(coord_str)
-    };
+        set_observer_coords_from_str(coord_str);
+    }
 
     let planes = Planes::new();
-
     let reader_thread = spawn_reader_thread(args, planes);
+
+    // Wait for the reader thread to complete
     reader_thread
         .join()
-        .expect("Couldn't join on the associated thread")?;
+        .map_err(|_| {
+            std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Failed to join reader thread: thread panicked",
+            )
+        })?
+        .map_err(|e| {
+            error!("Reader thread error: {}", e);
+            e
+        })?;
+
     Ok(())
 }
