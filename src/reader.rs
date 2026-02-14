@@ -43,16 +43,16 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
             continue;
         };
 
-        if let Some(m) = &args.log_messages {
-            if m.contains(&df) {
-                error!("DF:{}, L:{}", df, line);
-            }
+        if let Some(m) = &args.log_messages
+            && m.contains(&df)
+        {
+            error!("DF:{}, L:{}", df, line);
         }
 
-        if let Some(only) = &args.filter {
-            if only.iter().all(|&x| x != df) {
-                continue;
-            }
+        if let Some(only) = &args.filter
+            && only.iter().all(|&x| x != df)
+        {
+            continue;
         }
 
         if args.count_df {
