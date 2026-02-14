@@ -29,22 +29,21 @@ impl Plane {
                 .num_seconds()
                 .abs()
                 < 10
-        {
-            if let Some((lat, lon)) = match message_type {
+            && let Some((lat, lon)) = match message_type {
                 5..=8 => decoder::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 4),
                 9..=18 => decoder::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 1),
                 _ => None,
-            } {
-                if (-90.0..=90.0).contains(&lat) && (-180.0..=180.0).contains(&lon) {
-                    self.lat = lat;
-                    self.lon = lon;
-                    if let Some(observer) = decoder::observer::get_observer_coords() {
-                        self.distance_from_observer =
-                            Some(haversine(self.lat, self.lon, observer.0, observer.1));
-                    };
-                    self.position_timestamp = Some(self.timestamp);
-                }
             }
+            && (-90.0..=90.0).contains(&lat)
+            && (-180.0..=180.0).contains(&lon)
+        {
+            self.lat = lat;
+            self.lon = lon;
+            if let Some(observer) = decoder::observer::get_observer_coords() {
+                self.distance_from_observer =
+                    Some(haversine(self.lat, self.lon, observer.0, observer.1));
+            };
+            self.position_timestamp = Some(self.timestamp);
         }
     }
 }
