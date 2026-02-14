@@ -24,22 +24,23 @@ use super::{flag_and_range_value, range_value};
 ///
 /// A tuple containing the BDS1 and BDS2 values.
 pub fn bds(message: &[u32]) -> (u32, u32) {
-    if let (1, 0) = (message[8] & 0xF, message[9] & 0xF) {
-        if message[10] & 0x7 == 0 && message[11] & 0xC == 0 {
-            return (1, 0);
-        }
+    if let (1, 0) = (message[8] & 0xF, message[9] & 0xF)
+        && message[10] & 0x7 == 0
+        && message[11] & 0xC == 0
+    {
+        return (1, 0);
     };
 
     if let (2, 0) = (message[8] & 0xF, message[9] & 0xF) {
         return (2, 0);
     };
 
-    if let (3, 0) = (message[8] & 0xF, message[9] & 0xF) {
-        if let Some(value) = range_value(message, 48, 54) {
-            if (message[15] & 0b1100) != 0b1100 && value < 48 {
-                return (3, 0);
-            }
-        }
+    if let (3, 0) = (message[8] & 0xF, message[9] & 0xF)
+        && let Some(value) = range_value(message, 48, 54)
+        && (message[15] & 0b1100) != 0b1100
+        && value < 48
+    {
+        return (3, 0);
     };
 
     (0, 0)

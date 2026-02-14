@@ -72,10 +72,10 @@ impl Plane {
     pub(super) fn update_from_ext_19(&mut self, message: &[u32], message_subtype: u32) {
         self.vrate = decoder::vertical_rate(message);
         self.vrate_source = ' ';
-        if let Some(altitude) = self.altitude {
-            if let Some(altitude_delta) = decoder::altitude_delta(message) {
-                self.altitude_gnss = Some((altitude as i32 + altitude_delta) as u32);
-            }
+        if let Some(altitude) = self.altitude
+            && let Some(altitude_delta) = decoder::altitude_delta(message)
+        {
+            self.altitude_gnss = Some((altitude as i32 + altitude_delta) as u32);
         }
         match message_subtype {
             1 => {

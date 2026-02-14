@@ -1,5 +1,5 @@
 use squitterator::{
-    initialize_logger, set_observer_coords_from_str, spawn_reader_thread, AppResult, Args, Planes,
+    AppResult, Args, Planes, initialize_logger, set_observer_coords_from_str, spawn_reader_thread,
 };
 
 use clap::Parser;
@@ -25,12 +25,7 @@ fn main() -> AppResult<()> {
     // Wait for the reader thread to complete
     reader_thread
         .join()
-        .map_err(|_| {
-            std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "Failed to join reader thread: thread panicked",
-            )
-        })?
+        .map_err(|_| std::io::Error::other("Failed to join reader thread: thread panicked"))?
         .map_err(|e| {
             error!("Reader thread error: {}", e);
             e

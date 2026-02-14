@@ -117,10 +117,7 @@ impl decoder::Downlink for Mds {
             if let Some(result) = decoder::is_bds_1_7(message) {
                 self.capability = Some(result);
                 bds = (1, 7);
-            }
-        }
-        if bds == (0, 0) {
-            if let Some(value) = decoder::is_bds_4_0(message) {
+            } else if let Some(value) = decoder::is_bds_4_0(message) {
                 self.selected_altitude =
                     value.mcp_selected_altitude.or(value.fms_selected_altitude);
                 self.target_altitude_source = match value.target_altitude_source {
@@ -134,10 +131,7 @@ impl decoder::Downlink for Mds {
                 };
                 self.barometric_pressure_setting = value.barometric_pressure_setting;
                 bds = (4, 0);
-            }
-        }
-        if bds == (0, 0) {
-            if let Some(result) = decoder::is_bds_5_0(message) {
+            } else if let Some(result) = decoder::is_bds_5_0(message) {
                 self.roll_angle = result.roll_angle;
                 self.track = result.track_angle;
                 self.track_angle_rate = result.track_angle_rate;
@@ -145,10 +139,7 @@ impl decoder::Downlink for Mds {
                 self.true_airspeed = result.true_airspeed;
                 self.track_source = Some('\u{2085}');
                 bds = (5, 0);
-            }
-        }
-        if bds == (0, 0) {
-            if let Some(result) = decoder::is_bds_6_0(message) {
+            } else if let Some(result) = decoder::is_bds_6_0(message) {
                 self.heading = result.magnetic_heading;
                 self.indicated_airspeed = result.indicated_airspeed;
                 self.mach_number = result.mach_number;
@@ -164,10 +155,7 @@ impl decoder::Downlink for Mds {
                 };
                 self.heading_source = Some('\u{2086}');
                 bds = (6, 0);
-            }
-        }
-        if bds == (0, 0) {
-            if let Some(meteo) = decoder::is_bds_4_4(message) {
+            } else if let Some(meteo) = decoder::is_bds_4_4(message) {
                 self.temperature = meteo.temp;
                 if meteo.wind.is_some() {
                     self.wind = meteo.wind;
@@ -176,10 +164,9 @@ impl decoder::Downlink for Mds {
                 self.turbulence = meteo.turbulence;
                 self.pressure = meteo.pressure;
                 bds = (4, 4);
+            } else {
+                self.temperature = decoder::is_bds_4_5(message);
             }
-        }
-        if bds == (0, 0) {
-            self.temperature = decoder::is_bds_4_5(message);
         }
         debug!("DF:{} BDS:{}.{}", self.df.unwrap_or(0), bds.0, bds.1);
     }
