@@ -56,10 +56,10 @@ impl Plane {
     fn amend_from_ext_19(&mut self, dl: &Ext) {
         self.vrate = dl.vrate;
         self.vrate_source = ' ';
-        if let Some(altitude_delta) = dl.altitude_delta {
-            if let Some(altitude) = self.altitude {
-                self.altitude_gnss = Some((altitude as i32 + altitude_delta) as u32);
-            }
+        if let Some(altitude_delta) = dl.altitude_delta
+            && let Some(altitude) = self.altitude
+        {
+            self.altitude_gnss = Some((altitude as i32 + altitude_delta) as u32);
         }
         match dl.message_type.1 {
             1 => {
