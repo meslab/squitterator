@@ -12,26 +12,28 @@ impl Plane {
         if bds == (3, 0) {
             self.threat_encounter = decoder::threat_encounter(message);
         }
-        if bds == (0, 0) {
-            if let Some(result) = decoder::is_bds_1_7(message) {
-                self.capability.1 = result;
-                bds = (1, 7);
-                debug!("Relaxed:{}", relaxed);
-                debug!(
-                    "DF:{}, BDS:{}.{}, C:{:b} 4:{} 4.4:{} 5:{} 6:{}",
-                    df,
-                    bds.0,
-                    bds.1,
-                    self.capability.1.flags,
-                    self.capability.1.bds40,
-                    self.capability.1.bds44,
-                    self.capability.1.bds50,
-                    self.capability.1.bds60
-                );
-            }
+        if bds == (0, 0)
+            && let Some(result) = decoder::is_bds_1_7(message)
+        {
+            self.capability.1 = result;
+            bds = (1, 7);
+            debug!("Relaxed:{}", relaxed);
+            debug!(
+                "DF:{}, BDS:{}.{}, C:{:b} 4:{} 4.4:{} 5:{} 6:{}",
+                df,
+                bds.0,
+                bds.1,
+                self.capability.1.flags,
+                self.capability.1.bds40,
+                self.capability.1.bds44,
+                self.capability.1.bds50,
+                self.capability.1.bds60
+            );
         }
-        if bds == (0, 0) && (relaxed || self.capability.1.bds40) {
-            if let Some(value) = decoder::is_bds_4_0(message) {
+        if bds == (0, 0) {
+            if (relaxed || self.capability.1.bds40)
+                && let Some(value) = decoder::is_bds_4_0(message)
+            {
                 self.selected_altitude =
                     value.mcp_selected_altitude.or(value.fms_selected_altitude);
                 self.target_altitude_source = match value.target_altitude_source {
@@ -52,10 +54,9 @@ impl Plane {
                     bds.1,
                     value.target_altitude_source.unwrap_or(0)
                 );
-            }
-        }
-        if bds == (0, 0) && (relaxed || self.capability.1.bds50) {
-            if let Some(result) = decoder::is_bds_5_0(message) {
+            } else if (relaxed || self.capability.1.bds50)
+                && let Some(result) = decoder::is_bds_5_0(message)
+            {
                 self.roll_angle = result.roll_angle;
                 self.track = result.track_angle;
                 self.track_angle_rate = result.track_angle_rate;
@@ -66,10 +67,9 @@ impl Plane {
                 self.track_timestamp = Some(self.timestamp);
                 bds = (5, 0);
                 debug!("DF:{}, BDS:{}.{}", df, bds.0, bds.1);
-            }
-        }
-        if bds == (0, 0) && (relaxed || self.capability.1.bds60) {
-            if let Some(result) = decoder::is_bds_6_0(message) {
+            } else if (relaxed || self.capability.1.bds60)
+                && let Some(result) = decoder::is_bds_6_0(message)
+            {
                 self.heading = result.magnetic_heading;
                 self.indicated_airspeed = result.indicated_airspeed;
                 self.mach_number = result.mach_number;
@@ -87,10 +87,7 @@ impl Plane {
                 self.heading_timestamp = Some(self.timestamp);
                 bds = (6, 0);
                 debug!("DF:{}, BDS:{}.{}", df, bds.0, bds.1);
-            }
-        }
-        if bds == (0, 0) {
-            if let Some(meteo) = decoder::is_bds_4_4(message) {
+            } else if let Some(meteo) = decoder::is_bds_4_4(message) {
                 self.temperature = meteo.temp;
                 if meteo.wind.is_some() {
                     self.wind = meteo.wind;
@@ -100,10 +97,7 @@ impl Plane {
                 self.pressure = meteo.pressure;
                 bds = (4, 4);
                 debug!("DF:{} B:4.4 FOM:{:b}", df, message[8] & 0xF);
-            }
-        }
-        if bds == (0, 0) {
-            if let Some(value) = decoder::is_bds_4_5(message) {
+            } else if let Some(value) = decoder::is_bds_4_5(message) {
                 self.temperature = Some(value)
             }
         }
