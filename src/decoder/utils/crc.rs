@@ -1,5 +1,3 @@
-use std::vec;
-
 use log::debug;
 
 use crate::range_value;
@@ -53,40 +51,42 @@ fn crc56(message: &[u32]) -> u32 {
     data >> 8
 }
 
-/// Calculate the reminder of the message
+/// Calculate the CRC-24 syndrome of a message.
+///
+/// This is the remainder of the whole message (data followed by the 24-bit
+/// parity/address field) divided by the Mode S CRC-24 generator polynomial
+/// (`0xFFF409`, i.e. `x^24 + x^23 + ... + 1`).
+///
+/// For messages whose parity field holds the pure CRC (DF11, DF17, DF18) a
+/// valid frame yields a syndrome of `0`. For messages whose parity field holds
+/// the address/parity (AP) overlay (e.g. DF0/4/5/16/20/21/24) the syndrome
+/// equals the transmitting ICAO address, so it is not zero even for valid
+/// frames.
 ///
 /// # Arguments
 ///
-/// * `message` - The message to calculate the reminder
+/// * `message` - The message to calculate the syndrome for
 ///
 /// # Returns
 ///
-/// The reminder of the message
+/// The 24-bit syndrome of the message
 ///
 pub(crate) fn reminder(message: &[u32]) -> u32 {
-    let generator = [0b11111111u16, 0b11111010u16, 0b00000100u16, 0b10000000u16];
+    const POLY: u32 = 0x00FF_F409;
+    const REG_MASK: u32 = 0x00FF_FFFF;
 
-    let mut bytes = message[0..message.len() - 6]
-        .iter()
-        .map(|&x| (x & 0b1111) as u8)
-        .collect::<Vec<u8>>();
-    bytes.append(vec![0; 6].as_mut());
-
-    for i in 0..bytes.len() - 6 {
-        for j in 0..8u8 {
-            let mask = 0x80 >> j;
-            if bytes[i] & mask != 0 {
-                bytes[i] ^= (generator[0] >> j) as u8;
-                bytes[i + 1] ^= (generator[0] << (8 - j)) as u8 | (generator[1] >> j) as u8;
-                bytes[i + 2] ^= (generator[1] << (8 - j)) as u8 | (generator[2] >> j) as u8;
-                bytes[i + 3] ^= (generator[2] << (8 - j)) as u8 | (generator[3] >> j) as u8;
+    let mut reg: u32 = 0;
+    for &nibble in message {
+        for shift in (0..4).rev() {
+            let bit = (nibble >> shift) & 1;
+            let top = (reg >> 23) & 1;
+            reg = ((reg << 1) | bit) & REG_MASK;
+            if top != 0 {
+                reg ^= POLY;
             }
         }
     }
-
-    (((bytes[bytes.len() - 3]) as u32) << 16)
-        | (((bytes[bytes.len() - 2]) as u32) << 8)
-        | (bytes[bytes.len() - 1]) as u32
+    reg
 }
 
 #[cfg(test)]
@@ -140,17 +140,37 @@ mod tests {
 
     #[test]
     fn test_reminder() {
-        let squitters = [
-            ("8D406B902015A678D4D220AA4BDA", 0),
-            ("A8281D9B10010080F6000058DB4E", 0),
-            ("A8281B19CE200030A800062E4BFE", 0),
+        // Pure-parity DFs (17) must have a zero syndrome.
+        let valid = [
+            "8D406B902015A678D4D220AA4BDA",
+            "8D40621D58C382D690C8AC2863A7",
+            "8D4B18FE68BF033F523BF5BAAAEB",
         ];
-
-        for (squitter, value) in squitters.iter() {
+        for squitter in valid.iter() {
             if let Some(message) = get_message(squitter) {
-                let result = reminder(&message);
-                assert_eq!(result, *value);
+                assert_eq!(reminder(&message), 0, "Squitter: {}", squitter);
             }
+        }
+
+        // AP-encoded DFs (21) carry the ICAO in the parity overlay, so the
+        // syndrome equals the address and is not zero for valid frames.
+        let ap = [
+            ("A8281D9B10010080F6000058DB4E", 0x39_2F_2C),
+            ("A8281B19CE200030A800062E4BFE", 0x44_04_6E),
+        ];
+        for (squitter, value) in ap.iter() {
+            if let Some(message) = get_message(squitter) {
+                assert_eq!(reminder(&message), *value, "Squitter: {}", squitter);
+            }
+        }
+    }
+
+    #[test]
+    fn test_reminder_rejects_corruption() {
+        if let Some(mut message) = get_message("8D406B902015A678D4D220AA4BDA") {
+            assert_eq!(reminder(&message), 0);
+            message[0] ^= 1;
+            assert_ne!(reminder(&message), 0);
         }
     }
 }

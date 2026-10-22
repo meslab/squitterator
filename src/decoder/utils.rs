@@ -22,7 +22,19 @@ pub(crate) use me_code::*;
 pub fn get_message(squitter: &str) -> Option<Vec<u32>> {
     clean_squitter(squitter)
         .filter(|message| matches!(message.len(), 14 | 28))
-        .filter(|message| reminder(message) == 0)
+        .filter(|message| has_valid_crc(message))
+}
+
+/// Checks the CRC of a message.
+///
+/// Only downlink formats that carry a pure CRC in their parity field (DF11,
+/// DF17 and DF18) can be validated without knowing the transmitting ICAO
+/// address. For these the message syndrome must be zero. All the other
+/// formats overlay the parity with the address (AP), so their syndrome is
+/// non-zero for valid frames and cannot be checked here.
+fn has_valid_crc(message: &[u32]) -> bool {
+    let df = (message[0] << 1) | (message[1] >> 3);
+    !matches!(df, 11 | 17 | 18) || reminder(message) == 0
 }
 
 pub(crate) fn get_hex_message(message: &[u32]) -> String {
