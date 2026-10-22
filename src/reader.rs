@@ -37,7 +37,7 @@ fn read_lines<R: BufRead>(reader: R, args: &Args, planes: &mut Planes) -> Result
             continue;
         };
 
-        debug!("DF:{}, L:{}", df, &line);
+        debug!("DF:{}, L:{}", df, line);
 
         let Some(icao) = get_icao(&message, df) else {
             continue;
@@ -120,7 +120,7 @@ fn connect_and_read_tcp(args: Arc<Args>, planes: &mut Planes) -> Result<()> {
     loop {
         match TcpStream::connect(&args.tcp) {
             Ok(stream) => {
-                info!("Successfully connected to the server {}", &args.tcp);
+                info!("Successfully connected to the server {}", args.tcp);
                 let reader = BufReader::new(stream);
                 if let Err(e) = read_lines(reader, &args, planes) {
                     error!("Error during reading: {}", e);
@@ -128,7 +128,7 @@ fn connect_and_read_tcp(args: Arc<Args>, planes: &mut Planes) -> Result<()> {
                 }
             }
             Err(e) => {
-                error!("Failed to connect to {}: {}", &args.tcp, e);
+                error!("Failed to connect to {}: {}", args.tcp, e);
                 sleep(Duration::from_secs(5));
             }
         }

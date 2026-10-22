@@ -28,7 +28,7 @@ pub(crate) fn track_and_groundspeed(
 
     let supersonic = |x| if is_supersonic { x * 4 } else { x };
     let groundspeed = supersonic((sp_west.powi(2) + sp_south.powi(2)).sqrt().floor() as u32);
-    let track = (((sp_west as f64).atan2(sp_south).to_degrees().floor() + 360.0) % 360.0) as u32;
+    let track = ((sp_west.atan2(sp_south).to_degrees().floor() + 360.0) % 360.0) as u32;
     (Some(track), Some(groundspeed))
 }
 

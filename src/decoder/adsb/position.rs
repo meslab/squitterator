@@ -42,7 +42,7 @@ pub(crate) fn cpr_location(
                 / div)
                 + 0.5)
                 .floor();
-            let lon = dlngt * (pmod(m as i32, ni) as f64 + lngt as f64 / div) as f64;
+            let lon = dlngt * (pmod(m as i32, ni) as f64 + lngt as f64 / div);
 
             Some((rlat[cpr_form as usize], signed_lon(lon)))
         }

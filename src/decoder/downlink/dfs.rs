@@ -43,7 +43,7 @@ impl DF {
             .lock()
             .expect("Cannot open downlink error log file.");
         write!(downlink_error_log_file, "{}", self)?;
-        debug!("Writing to {:?}", &downlink_error_log_file);
+        debug!("Writing to {:?}", downlink_error_log_file);
         Ok(())
     }
 }
