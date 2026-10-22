@@ -10,44 +10,49 @@ pub(crate) fn cpr_location(
     cpr_lat: &[u32; 2],
     cpr_lon: &[u32; 2],
     cpr_form: u32,
-    coeff: i32,
+    surface: bool,
 ) -> Option<(f64, f64)> {
     let div = (1 << 17) as f64;
-    let adl0 = 6.0; // 360 / 60
-    let adl1 = 360.0 / 59.0;
+    let (adl0, adl1) = if surface {
+        (90.0 / 60.0, 90.0 / 59.0)
+    } else {
+        (6.0, 360.0 / 59.0)
+    };
+    let zone_limit = if surface { 90.0 } else { 360.0 };
 
     let j = ((59.0 * cpr_lat[0] as f64 - 60.0 * cpr_lat[1] as f64) / div + 0.5).floor();
     let rlat = [
-        fixed_lat(adl0 * ((j % 60.0) + (cpr_lat[0] as f64 / div))),
-        fixed_lat(adl1 * ((j % 59.0) + (cpr_lat[1] as f64 / div))),
+        fixed_lat_zone(adl0 * ((j % 60.0) + (cpr_lat[0] as f64 / div)), zone_limit),
+        fixed_lat_zone(adl1 * ((j % 59.0) + (cpr_lat[1] as f64 / div)), zone_limit),
     ];
 
     let nl = [nl(rlat[0]), nl(rlat[1])];
-    match nl[0] == nl[1] {
-        true => {
-            let (ni, nlt, lngt) = match cpr_form {
-                1 => (
-                    *[nl[1] / coeff - 1, 1].iter().max()?, // coeff = 4 for ground location
-                    nl[1] / coeff,                         // coeff = 1 for airborne location
-                    cpr_lon[1],
-                ),
-                _ => (
-                    *[nl[0] / coeff, 1].iter().max()?, // coeff = 4 for ground location
-                    nl[0] / coeff,                     // coeff = 1 for airborne location
-                    cpr_lon[0],
-                ),
-            };
-            let dlngt = 360.0 / ni as f64;
-            let m = (((cpr_lon[0] as f64 * (nlt - 1) as f64 - cpr_lon[1] as f64 * nlt as f64)
-                / div)
-                + 0.5)
-                .floor();
-            let lon = dlngt * (pmod(m as i32, ni) as f64 + lngt as f64 / div);
-
-            Some((rlat[cpr_form as usize], signed_lon(lon)))
-        }
-        false => None,
+    if nl[0] != nl[1] {
+        return None;
     }
+
+    let (ni, nlt, lngt) = if surface {
+        let n = *[nl[cpr_form as usize] - 1, 1].iter().max()?;
+        match cpr_form {
+            1 => (n, nl[1] - 1, cpr_lon[1]),
+            _ => (n, nl[0], cpr_lon[0]),
+        }
+    } else {
+        match cpr_form {
+            1 => {
+                let n = *[nl[1] - 1, 1].iter().max()?;
+                (n, nl[1], cpr_lon[1])
+            }
+            _ => (nl[0], nl[0], cpr_lon[0]),
+        }
+    };
+
+    let dlngt = if surface { 90.0 } else { 360.0 } / ni as f64;
+    let m = (((cpr_lon[0] as f64 * (nlt - 1) as f64 - cpr_lon[1] as f64 * nlt as f64) / div) + 0.5)
+        .floor();
+    let lon = dlngt * (pmod(m as i32, ni) as f64 + lngt as f64 / div);
+
+    Some((rlat[cpr_form as usize], signed_lon(lon)))
 }
 
 fn signed_lon(lon: f64) -> f64 {
@@ -58,10 +63,10 @@ fn signed_lon(lon: f64) -> f64 {
     }
 }
 
-fn fixed_lat(lat: f64) -> f64 {
+fn fixed_lat_zone(lat: f64, zone: f64) -> f64 {
     match lat {
-        90.0.. => lat - 360.0,
-        ..=-90.0 => lat + 360.0,
+        x if x >= zone => lat - 2.0 * zone,
+        x if x < -zone => lat + 2.0 * zone,
         _ => lat,
     }
 }

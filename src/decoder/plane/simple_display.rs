@@ -64,7 +64,7 @@ impl SimpleDisplay for Plane {
                 write!(f, "{:4} ", "")?;
             }
         }
-        if let Some(vrate) = self.vrate {
+        if let Some(vrate) = self.vrate.filter(|&v| v != 0) {
             write!(f, "{:>5}", vrate)?;
             write!(f, "{:1}", self.vrate_source)?;
         } else {

@@ -30,8 +30,8 @@ impl Plane {
                 .abs()
                 < 10
             && let Some((lat, lon)) = match message_type {
-                5..=8 => decoder::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 4),
-                9..=18 => decoder::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, 1),
+                5..=8 => decoder::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, true),
+                9..=18 => decoder::cpr_location(&self.cpr_lat, &self.cpr_lon, cpr_form, false),
                 _ => None,
             }
             && (-90.0..=90.0).contains(&lat)
