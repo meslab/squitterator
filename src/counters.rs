@@ -18,7 +18,7 @@ impl AppCounters {
     }
 
     pub(crate) fn update_count(&mut self, df: u32) {
-        *self.df_count.entry(df).or_insert(1) += 1;
+        *self.df_count.entry(df).or_insert(0) += 1;
     }
 
     pub(crate) fn reset_cleanup_count(&mut self) {
@@ -46,5 +46,20 @@ impl AppCounters {
 
     pub(crate) fn is_time_to_refresh(&self, now: &DateTime<Utc>, update: i64) -> bool {
         now.signed_duration_since(self.timestamp).num_seconds() > update
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_update_count() {
+        let mut counters = AppCounters::from_update_interval(3);
+        counters.update_count(17);
+        counters.update_count(17);
+        counters.update_count(20);
+        assert_eq!(counters.df_count[&17], 2);
+        assert_eq!(counters.df_count[&20], 1);
     }
 }

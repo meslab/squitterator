@@ -33,25 +33,22 @@ pub fn altitude(message: &[u32], df: u32) -> Option<u32> {
 }
 
 fn altitude_value(message: &[u32], code: Option<u16>) -> Option<u32> {
-    match code {
-        Some(code) => match code & 0b10 {
-            0 => match code & 1 {
-                0 => {
-                    let (high, low) = graytobin(message);
-                    let value = high * 500 + low * 100;
-                    match value {
-                        1200.. => Some(high * 500 + low * 100 - 1200),
-                        _ => None,
-                    }
-                }
-                _ => Some((((code >> 7) << 4) | ((code >> 2) & 0b1111)) as u32 * 25 - 1000),
-            },
-            _ => Some(
-                ((((code >> 7) << 4) & 0b11111110000 | (code >> 2) & 0b1111) as f32 * 0.31) as u32,
-            ),
-        },
-        None => None,
+    let code = code?;
+    if code & 0b10 != 0 {
+        return Some(
+            ((((code >> 7) << 4) & 0b11111110000 | (code >> 2) & 0b1111) as f32 * 0.31) as u32,
+        );
     }
+    if code & 1 == 0 {
+        let (high, low) = graytobin(message);
+        let value = high * 500 + low * 100;
+        return match value {
+            1200.. => Some(high * 500 + low * 100 - 1200),
+            _ => None,
+        };
+    }
+    let n = (((code >> 7) << 4) | ((code >> 2) & 0b1111)) as i32;
+    Some((n * 25 - 1000) as u32)
 }
 
 #[cfg(test)]
